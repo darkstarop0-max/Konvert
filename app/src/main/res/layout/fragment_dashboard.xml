@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background"
-    android:padding="16dp"
     tools:context=".ui.dashboard.DashboardFragment">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
 
     <TextView
         android:id="@+id/welcome_text"
@@ -31,93 +35,76 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/welcome_text" />
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/quick_actions_card"
+    <!-- Recent Converts Section -->
+    <TextView
+        android:id="@+id/recent_converts_title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        app:cardCornerRadius="8dp"
-        app:cardElevation="4dp"
-        style="@style/Widget.Konvert.CardView"
+        android:layout_marginTop="32dp"
+        android:text="Recent Converts"
+        android:textAppearance="@style/TextAppearance.Konvert.Headline3"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/subtitle_text">
+        app:layout_constraintTop_toBottomOf="@+id/subtitle_text" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Quick Actions"
-                android:textAppearance="@style/TextAppearance.Konvert.Headline3"
-                android:layout_marginBottom="16dp" />
-
-            <Button
-                android:id="@+id/pick_file_button"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Pick a File"
-                style="@style/Widget.Konvert.Button" />
-
-            <Button
-                android:id="@+id/convert_image_button"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Convert Image"
-                style="@style/Widget.Konvert.Button.Accent" />
-
-            <Button
-                android:id="@+id/settings_button"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Settings"
-                style="@style/Widget.Konvert.Button.Text" />
-        </LinearLayout>
-    </androidx.cardview.widget.CardView>
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recent_converts_recycler"
+        android:layout_width="0dp"
+        android:layout_height="120dp"
+        android:layout_marginTop="16dp"
+        android:clipToPadding="false"
+        android:orientation="horizontal"
+        android:paddingStart="0dp"
+        android:paddingEnd="16dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/recent_converts_title"
+        tools:itemCount="3"
+        tools:listitem="@layout/item_recent_convert" />
 
     <TextView
-        android:id="@+id/recent_conversions_title"
+        android:id="@+id/no_converts_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:text="Recent Conversions"
+        android:layout_marginTop="16dp"
+        android:text="No conversions yet"
+        android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.Konvert.Body1"
+        android:textColor="@color/text_secondary"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/recent_converts_title" />
+
+    <!-- Convert Section -->
+    <TextView
+        android:id="@+id/convert_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="Convert"
         android:textAppearance="@style/TextAppearance.Konvert.Headline3"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/quick_actions_card" />
+        app:layout_constraintTop_toBottomOf="@+id/recent_converts_recycler" />
 
-    <androidx.cardview.widget.CardView
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/convert_grid"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        app:cardCornerRadius="8dp"
-        app:cardElevation="2dp"
-        style="@style/Widget.Konvert.CardView"
+        android:layout_marginTop="16dp"
+        android:clipToPadding="false"
+        android:paddingBottom="24dp"
+        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+        app:spanCount="2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/recent_conversions_title">
+        app:layout_constraintTop_toBottomOf="@+id/convert_title"
+        tools:itemCount="5"
+        tools:listitem="@layout/item_convert_tile" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="No recent conversions yet"
-                android:textAppearance="@style/TextAppearance.Konvert.Body1"
-                android:textColor="@color/text_secondary"
-                android:textAlignment="center"
-                android:padding="16dp" />
-        </LinearLayout>
-    </androidx.cardview.widget.CardView>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView>
