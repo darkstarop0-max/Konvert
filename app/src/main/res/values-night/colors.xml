@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base brand colors - Apple-inspired Dark -->
+    <color name="primary">#0A84FF</color>
+    <color name="primary_dark">#0071E3</color>
+    <color name="primary_light">#64D2FF</color>
+    <color name="accent">#30D158</color>
+    <color name="accent_light">#66D37E</color>
+    <color name="accent_dark">#248A3D</color>
+
+    <!-- UI Background Colors - Apple-inspired Dark -->
+    <color name="background">#000000</color>
+    <color name="surface">#1C1C1E</color>
+    <color name="card_background">#2C2C2E</color>
+    <color name="divider">#38383A</color>
+    <color name="stroke_color">#38383A</color>
+    
+    <!-- Text Colors - Apple-inspired Dark -->
+    <color name="text_primary">#F2F2F7</color>
+    <color name="text_secondary">#D1D1D6</color>
+    <color name="text_tertiary">#8E8E93</color>
+    <color name="text_on_primary">#FFFFFF</color>
+    <color name="text_on_accent">#FFFFFF</color>
+    <color name="text_on_background">#F2F2F7</color>
+    
+    <!-- Status and Navigation Bar - Apple-inspired Dark -->
+    <color name="status_bar">#000000</color>
+    <color name="navigation_bar">#000000</color>
+    
+    <!-- UI Components - Apple-inspired Dark -->
+    <color name="button_normal">#0A84FF</color>
+    <color name="button_pressed">#0071E3</color>
+    <color name="button_focused">#64D2FF</color>
+    <color name="button_disabled">#636366</color>
+    
+    <!-- Bottom Navigation - Apple-inspired Dark -->
+    <color name="nav_item_selected">#0A84FF</color>
+    <color name="nav_item_unselected">#8E8E93</color>
+    <color name="nav_background">#1C1C1E</color>
+    
+    <!-- Other UI Elements - Apple-inspired Dark -->
+    <color name="error">#FF453A</color>
+    <color name="success">#30D158</color>
+    <color name="warning">#FF9F0A</color>
+    <color name="info">#5E5CE6</color>
+</resources>

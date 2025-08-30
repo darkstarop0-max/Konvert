@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Konvert</string>
+    <string name="dashboard">Dashboard</string>
+    <string name="conversion">Conversion</string>
+    <string name="settings">Settings</string>
+    <string name="file_picker">File Picker</string>
+    <string name="onboarding">Onboarding</string>
 </resources>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Widget.Konvert.Button.Gradient" parent="Widget.Konvert.Button">
+        <item name="android:background">@drawable/bg_button_gradient</item>
+    </style>
+</resources>

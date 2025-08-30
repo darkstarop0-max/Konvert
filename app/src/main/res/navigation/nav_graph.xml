@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/dashboardFragment">
+
+    <fragment
+        android:id="@+id/dashboardFragment"
+        android:name="com.curosoft.konvert.ui.dashboard.DashboardFragment"
+        android:label="@string/dashboard"
+        tools:layout="@layout/fragment_dashboard">
+        <action
+            android:id="@+id/action_dashboardFragment_to_filePickerFragment"
+            app:destination="@id/filePickerFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/conversionFragment"
+        android:name="com.curosoft.konvert.ui.conversion.ConversionFragment"
+        android:label="@string/conversion"
+        tools:layout="@layout/fragment_conversion" />
+
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.curosoft.konvert.ui.settings.SettingsFragment"
+        android:label="@string/settings"
+        tools:layout="@layout/fragment_settings" />
+        
+    <fragment
+        android:id="@+id/filePickerFragment"
+        android:name="com.curosoft.konvert.ui.filepicker.FilePickerFragment"
+        android:label="@string/file_picker"
+        tools:layout="@layout/fragment_file_picker">
+        <action
+            android:id="@+id/action_filePickerFragment_to_conversionFragment"
+            app:destination="@id/conversionFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/onboardingFragment"
+        android:name="com.curosoft.konvert.ui.onboarding.OnboardingFragment"
+        android:label="@string/onboarding"
+        tools:layout="@layout/fragment_onboarding">
+        <action
+            android:id="@+id/action_onboardingFragment_to_dashboardFragment"
+            app:destination="@id/dashboardFragment"
+            app:popUpTo="@id/onboardingFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+</navigation>

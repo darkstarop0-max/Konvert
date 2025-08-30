@@ -1,9 +1,50 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.Konvert" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+    <!-- Base application theme - Apple-inspired -->
+    <style name="Theme.Konvert" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Color attributes -->
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+        <item name="colorAccent">@color/accent</item>
+        <item name="android:colorBackground">@color/background</item>
+        <item name="android:windowBackground">@color/background</item>
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+        
+        <!-- Status bar and navigation bar -->
+        <item name="android:statusBarColor">@color/status_bar</item>
+        <item name="android:navigationBarColor">@color/navigation_bar</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
+        
+        <!-- Widget style overrides -->
+        <item name="buttonStyle">@style/Widget.Konvert.Button</item>
+        <item name="editTextStyle">@style/Widget.Konvert.EditText</item>
+        <item name="toolbarStyle">@style/Widget.Konvert.Toolbar</item>
+        <item name="actionBarStyle">@style/Widget.Konvert.Toolbar</item>
+        <item name="android:buttonStyle">@style/Widget.Konvert.Button</item>
+        
+        <!-- Text appearance overrides -->
+        <item name="android:textAppearance">@style/TextAppearance.Konvert.Body1</item>
+        <item name="textAppearanceHeadline1">@style/TextAppearance.Konvert.Headline1</item>
+        <item name="textAppearanceHeadline2">@style/TextAppearance.Konvert.Headline2</item>
+        <item name="textAppearanceHeadline3">@style/TextAppearance.Konvert.Headline3</item>
+        <item name="textAppearanceBody1">@style/TextAppearance.Konvert.Body1</item>
+        <item name="textAppearanceBody2">@style/TextAppearance.Konvert.Body2</item>
+        <item name="textAppearanceCaption">@style/TextAppearance.Konvert.Caption</item>
+        
+        <!-- Animation styles -->
+        <item name="android:windowActivityTransitions">true</item>
+        <item name="android:windowEnterTransition">@android:transition/fade</item>
+        <item name="android:windowExitTransition">@android:transition/fade</item>
+        <item name="android:windowAllowEnterTransitionOverlap">true</item>
+        <item name="android:windowAllowReturnTransitionOverlap">true</item>
     </style>
-
-    <style name="Theme.Konvert" parent="Base.Theme.Konvert" />
+    
+    <!-- Splash screen theme - Apple-inspired -->
+    <style name="Theme.Konvert.Splash" parent="Theme.Konvert">
+        <item name="android:windowBackground">@color/background</item>
+        <item name="android:statusBarColor">@color/background</item>
+        <item name="android:navigationBarColor">@color/background</item>
+        <item name="android:windowFullscreen">false</item>
+    </style>
 </resources>
