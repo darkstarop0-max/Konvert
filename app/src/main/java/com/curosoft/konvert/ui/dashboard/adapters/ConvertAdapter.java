@@ -6,7 +6,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -20,9 +19,18 @@ public class ConvertAdapter extends RecyclerView.Adapter<ConvertAdapter.ConvertV
 
     private static final String TAG = "ConvertAdapter";
     private final List<ConvertItem> convertItems;
-
+    private OnConvertItemClickListener listener;
+    
+    public interface OnConvertItemClickListener {
+        void onConvertItemClick(ConvertItem item);
+    }
+    
     public ConvertAdapter(List<ConvertItem> convertItems) {
         this.convertItems = convertItems;
+    }
+    
+    public void setOnConvertItemClickListener(OnConvertItemClickListener listener) {
+        this.listener = listener;
     }
 
     @NonNull
@@ -44,7 +52,7 @@ public class ConvertAdapter extends RecyclerView.Adapter<ConvertAdapter.ConvertV
         return convertItems.size();
     }
 
-    static class ConvertViewHolder extends RecyclerView.ViewHolder {
+    class ConvertViewHolder extends RecyclerView.ViewHolder {
         private final ImageView iconView;
         private final TextView titleView;
 
@@ -56,13 +64,8 @@ public class ConvertAdapter extends RecyclerView.Adapter<ConvertAdapter.ConvertV
             // Set click listener
             itemView.setOnClickListener(v -> {
                 int position = getAdapterPosition();
-                if (position != RecyclerView.NO_POSITION) {
-                    // Show a toast for now
-                    Toast.makeText(
-                            itemView.getContext(),
-                            "Selected: " + titleView.getText(),
-                            Toast.LENGTH_SHORT
-                    ).show();
+                if (position != RecyclerView.NO_POSITION && listener != null) {
+                    listener.onConvertItemClick(convertItems.get(position));
                     
                     // Log the click for debugging
                     Log.d(TAG, "Clicked on convert tile: " + titleView.getText());

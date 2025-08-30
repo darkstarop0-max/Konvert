@@ -26,6 +26,12 @@
         <item name="android:elevation">0dp</item>
     </style>
     
+    <style name="Widget.Konvert.Button.Filled">
+        <item name="android:background">@drawable/bg_button_filled</item>
+        <item name="android:textColor">@color/text_on_primary</item>
+        <item name="android:elevation">1dp</item>
+    </style>
+    
     <!-- TextView Styles - Apple-inspired -->
     <style name="TextAppearance.Konvert.Headline1" parent="TextAppearance.AppCompat.Display3">
         <item name="android:textSize">34sp</item>
@@ -123,5 +129,27 @@
         <item name="itemTextColor">@drawable/selector_bottom_nav_item</item>
         <item name="labelVisibilityMode">unlabeled</item>
         <item name="itemIconSize">24dp</item>
+    </style>
+    
+    <!-- Bottom Sheet Dialog Style - Apple-inspired -->
+    <style name="BottomSheetDialogStyle" parent="Theme.MaterialComponents.Light.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/AppleBottomSheetStyle</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:windowSoftInputMode">adjustResize</item>
+    </style>
+    
+    <style name="AppleBottomSheetStyle" parent="Widget.MaterialComponents.BottomSheet.Modal">
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearanceBottomSheetDialog</item>
+        <item name="backgroundTint">@android:color/white</item>
+        <item name="elevation">16dp</item>
+    </style>
+    
+    <style name="ShapeAppearanceBottomSheetDialog" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopRight">14dp</item>
+        <item name="cornerSizeTopLeft">14dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
     </style>
 </resources>

@@ -21,4 +21,11 @@
     <string name="onboarding_image_description">Onboarding illustration</string>
     <string name="onboarding_title_5">Ready to Go</string>
     <string name="onboarding_subtitle_5">Start converting your files with just a few taps.</string>
+    
+    <!-- Bottom Sheet Strings -->
+    <string name="select_file">Select File</string>
+    <string name="change_file">Change File</string>
+    <string name="cancel">Cancel</string>
+    <string name="proceed">Proceed</string>
+    <string name="convert_to">Convert To</string>
 </resources>

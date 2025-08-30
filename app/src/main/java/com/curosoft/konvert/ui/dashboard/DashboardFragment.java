@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.curosoft.konvert.R;
+import com.curosoft.konvert.ui.conversion.ConversionOptionBottomSheet;
 import com.curosoft.konvert.ui.dashboard.adapters.ConvertAdapter;
 import com.curosoft.konvert.ui.dashboard.adapters.RecentConvertAdapter;
 import com.curosoft.konvert.ui.dashboard.models.ConvertItem;
@@ -75,7 +76,16 @@ public class DashboardFragment extends Fragment {
         
         // Set layout manager and adapter
         convertGridRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
-        convertGridRecyclerView.setAdapter(new ConvertAdapter(convertItems));
+        ConvertAdapter adapter = new ConvertAdapter(convertItems);
+        
+        // Set click listener for tiles
+        adapter.setOnConvertItemClickListener(item -> {
+            // Show the bottom sheet with the selected category
+            ConversionOptionBottomSheet bottomSheet = ConversionOptionBottomSheet.newInstance(item.getTitle());
+            bottomSheet.show(getParentFragmentManager(), "ConversionOptionBottomSheet");
+        });
+        
+        convertGridRecyclerView.setAdapter(adapter);
     }
     
     private List<RecentConvertItem> getDummyRecentConvertItems() {
