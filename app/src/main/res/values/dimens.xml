@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="dot_size_normal">8dp</dimen>
+    <dimen name="dot_size_large">10dp</dimen>
+    <dimen name="onboarding_title_text_size">28sp</dimen>
+    <dimen name="onboarding_subtitle_text_size">17sp</dimen>
+    <dimen name="onboarding_content_padding">32dp</dimen>
+    <dimen name="onboarding_image_size">200dp</dimen>
+</resources>

@@ -5,4 +5,20 @@
     <string name="settings">Settings</string>
     <string name="file_picker">File Picker</string>
     <string name="onboarding">Onboarding</string>
+    
+    <!-- Onboarding Strings -->
+    <string name="skip">Skip</string>
+    <string name="next">Next</string>
+    <string name="get_started">Get Started</string>
+    <string name="onboarding_title_1">Welcome to Konvert</string>
+    <string name="onboarding_subtitle_1">Convert anything, anytime.</string>
+    <string name="onboarding_title_2">Fast &amp; Reliable</string>
+    <string name="onboarding_subtitle_2">Convert files with minimal wait time, maximum quality.</string>
+    <string name="onboarding_title_3">All Formats Supported</string>
+    <string name="onboarding_subtitle_3">Images, Documents, Audio, Video, Archives</string>
+    <string name="onboarding_title_4">Privacy Focused</string>
+    <string name="onboarding_subtitle_4">Your files stay safe on your device. No uploads required.</string>
+    <string name="onboarding_image_description">Onboarding illustration</string>
+    <string name="onboarding_title_5">Ready to Go</string>
+    <string name="onboarding_subtitle_5">Start converting your files with just a few taps.</string>
 </resources>

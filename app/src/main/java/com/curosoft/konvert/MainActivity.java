@@ -1,5 +1,6 @@
 package com.curosoft.konvert;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -10,6 +11,8 @@ import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
+import com.curosoft.konvert.ui.onboarding.OnboardingActivity;
+import com.curosoft.konvert.utils.PreferenceManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
@@ -18,10 +21,22 @@ public class MainActivity extends AppCompatActivity {
     private BottomNavigationView bottomNavigationView;
     private CardView bottomNavigationContainer;
     private Toolbar toolbar;
+    private PreferenceManager preferenceManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        // Check if onboarding is completed
+        preferenceManager = PreferenceManager.getInstance(this);
+        if (preferenceManager.isFirstTimeLaunch()) {
+            // First time launch - show onboarding
+            startActivity(new Intent(this, OnboardingActivity.class));
+            finish();
+            return;
+        }
+        
+        // User has seen onboarding, proceed normally
         setContentView(R.layout.activity_main);
         
         // Set up toolbar
