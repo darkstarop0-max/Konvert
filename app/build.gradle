@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId "com.curosoft.konvert"
-        minSdk 23
+        minSdk 26 // Updated from 23 to 26 to support Apache POI and log4j
         targetSdk 36
         versionCode 1
         versionName "1.0"
@@ -26,6 +26,30 @@ android {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
     }
+    
+    // Add packaging options to handle META-INF conflicts
+    packaging {
+        resources {
+            excludes += [
+                'META-INF/DEPENDENCIES',
+                'META-INF/LICENSE',
+                'META-INF/LICENSE.txt',
+                'META-INF/license.txt',
+                'META-INF/NOTICE',
+                'META-INF/NOTICE.txt',
+                'META-INF/notice.txt',
+                'META-INF/ASL2.0',
+                'META-INF/LGPL2.1',
+                'META-INF/*.kotlin_module',
+                'META-INF/LICENSE.md',
+                'META-INF/LICENSE-notice.md',
+                'META-INF/services/javax.xml.*',
+                'META-INF/LICENSE-W3C-TEST',
+                'META-INF/AL2.0',
+                'META-INF/proguard/*'
+            ]
+        }
+    }
 }
 
 dependencies {
@@ -38,6 +62,10 @@ dependencies {
     // Navigation Component
     implementation 'androidx.navigation:navigation-fragment:2.7.7'
     implementation 'androidx.navigation:navigation-ui:2.7.7'
+    
+    // PDF to DOCX conversion - using iText instead of PDFBox
+    implementation 'com.itextpdf:itext7-core:7.2.5'
+    implementation 'org.apache.poi:poi-ooxml:5.2.3'
     
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit

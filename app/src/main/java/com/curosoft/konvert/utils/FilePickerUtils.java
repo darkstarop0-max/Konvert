@@ -35,7 +35,7 @@ public class FilePickerUtils {
     
     // Callback interface for file selection
     public interface FileSelectionCallback {
-        void onFileSelected(File file, String originalName, String mimeType);
+        void onFileSelected(File file, String originalName, String mimeType, Uri uri);
         void onFileSelectionCancelled();
         void onFileSelectionError(Exception e);
     }
@@ -99,7 +99,7 @@ public class FilePickerUtils {
                             String fileName = getFileName(context, uri);
                             String mimeType = getMimeType(context, uri);
                             
-                            callback.onFileSelected(localFile, fileName, mimeType);
+                            callback.onFileSelected(localFile, fileName, mimeType, uri);
                         } catch (Exception e) {
                             Log.e(TAG, "Error processing selected file", e);
                             callback.onFileSelectionError(e);

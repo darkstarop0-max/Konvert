@@ -1,7 +1,12 @@
 package com.curosoft.konvert.ui.conversion;
 
 import android.app.Dialog;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +23,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.curosoft.konvert.R;
 import com.curosoft.konvert.utils.FilePickerUtils;
+import com.curosoft.konvert.utils.PdfToDocxConverter;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
@@ -44,6 +50,8 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
     private File selectedFile;
     private String selectedFormat;
     private String selectedFileName;
+    private String selectedMimeType;
+    private Uri originalFileUri;
     
     public static ConversionOptionBottomSheet newInstance(String category) {
         ConversionOptionBottomSheet fragment = new ConversionOptionBottomSheet();
@@ -64,9 +72,13 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
         // Register file picker
         filePicker = FilePickerUtils.registerFilePicker(this, category, new FilePickerUtils.FileSelectionCallback() {
             @Override
-            public void onFileSelected(File file, String originalName, String mimeType) {
+            public void onFileSelected(File file, String originalName, String mimeType, Uri uri) {
                 selectedFile = file;
                 selectedFileName = originalName;
+                selectedMimeType = mimeType;
+                // Store the original Uri that was passed to the FilePickerUtils
+                originalFileUri = uri;
+                
                 updateFileNameDisplay(originalName);
                 updateProceedButtonState();
             }
@@ -138,6 +150,12 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
         // Set up click listeners
         btnSelectFile.setOnClickListener(v -> {
             String mimeType = FilePickerUtils.getMimeTypeForCategory(category);
+            
+            // For PDF to DOCX conversion specifically
+            if (category.equalsIgnoreCase("docs")) {
+                mimeType = "application/pdf";
+            }
+            
             filePicker.launch(mimeType);
         });
         
@@ -145,11 +163,18 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
         
         btnProceed.setOnClickListener(v -> {
             if (selectedFile != null && selectedFormat != null) {
-                // In a real app, we would start the conversion process here
-                String message = String.format("Converting %s to %s format", 
-                        selectedFileName, selectedFormat);
-                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
-                dismiss();
+                // Only handle PDF to DOCX for now as per requirements
+                if (category.equalsIgnoreCase("docs") && 
+                    selectedMimeType != null && 
+                    (selectedMimeType.contains("pdf") || selectedFileName.toLowerCase().endsWith(".pdf")) &&
+                    selectedFormat.equalsIgnoreCase("DOCX")) {
+                    
+                    performPdfToDocxConversion();
+                } else {
+                    Toast.makeText(requireContext(), 
+                            "Only PDF to DOCX conversion is currently supported", 
+                            Toast.LENGTH_SHORT).show();
+                }
             }
         });
         
@@ -158,6 +183,10 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
             selectedFormat = format;
             updateProceedButtonState();
         });
+    }
+    
+    private void performPdfToDocxConversion() {
+        new ConversionTask(requireContext(), originalFileUri).execute();
     }
     
     private void updateFileNameDisplay(String fileName) {
@@ -172,13 +201,24 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
     }
     
     private void updateProceedButtonState() {
-        btnProceed.setEnabled(selectedFile != null && selectedFormat != null);
+        // Check if it's a PDF file and the selected format is DOCX
+        boolean isPdfToDocx = category.equalsIgnoreCase("docs") && 
+                              selectedFile != null &&
+                              (selectedMimeType != null && selectedMimeType.contains("pdf") || 
+                               selectedFileName != null && selectedFileName.toLowerCase().endsWith(".pdf")) &&
+                              selectedFormat != null &&
+                              selectedFormat.equalsIgnoreCase("DOCX");
+        
+        btnProceed.setEnabled(selectedFile != null && selectedFormat != null && isPdfToDocx);
     }
     
     private List<String> getFormatsForCategory(String category) {
+        // For the docs category, only enable PDF to DOCX conversion as per requirements
+        if (category.equalsIgnoreCase("docs")) {
+            return Arrays.asList("DOCX");
+        }
+        
         switch (category.toLowerCase()) {
-            case "docs":
-                return Arrays.asList("DOCX", "PDF", "TXT", "RTF", "ODT", "EPUB", "MOBI");
             case "images":
                 return Arrays.asList("JPG", "PNG", "WEBP", "HEIC", "BMP", "GIF");
             case "audio":
@@ -189,6 +229,56 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
                 return Arrays.asList("ZIP", "RAR", "7Z", "TAR.GZ");
             default:
                 return new ArrayList<>();
+        }
+    }
+    
+    /**
+     * AsyncTask to perform the PDF to DOCX conversion in the background
+     */
+    private class ConversionTask extends AsyncTask<Void, Void, String> {
+        private Context context;
+        private Uri pdfUri;
+        private ProgressDialog progressDialog;
+        
+        public ConversionTask(Context context, Uri pdfUri) {
+            this.context = context;
+            this.pdfUri = pdfUri;
+        }
+        
+        @Override
+        protected void onPreExecute() {
+            progressDialog = new ProgressDialog(context);
+            progressDialog.setMessage("Converting PDF to DOCX...");
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+        }
+        
+        @Override
+        protected String doInBackground(Void... voids) {
+            try {
+                return PdfToDocxConverter.convertPdfToDocx(context, pdfUri);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+        
+        @Override
+        protected void onPostExecute(String outputPath) {
+            if (progressDialog.isShowing()) {
+                progressDialog.dismiss();
+            }
+            
+            if (outputPath != null) {
+                Toast.makeText(context, 
+                        "Conversion successful! File saved to:\n" + outputPath, 
+                        Toast.LENGTH_LONG).show();
+                dismiss();
+            } else {
+                Toast.makeText(context, 
+                        "Conversion failed. Please try again.", 
+                        Toast.LENGTH_SHORT).show();
+            }
         }
     }
 }
