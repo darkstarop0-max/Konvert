@@ -1,5 +1,6 @@
 package com.curosoft.konvert.utils;
 
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -21,6 +22,7 @@ import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -121,6 +123,7 @@ public class PdfToDocxConverter {
      * @throws IOException if there's an error creating the DOCX file
      */
     private static String createDocxFile(Context context, String text, String fileName) throws IOException {
+        Log.d(TAG, "Creating DOCX file: " + fileName);
         XWPFDocument document = new XWPFDocument();
         
         // Split text by lines and create paragraphs
@@ -137,58 +140,52 @@ public class PdfToDocxConverter {
             }
         }
         
-        // Save the document
-        String filePath;
-        OutputStream outputStream = null;
+        // Create the output directory based on Android version
+        File outputDir;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            // For Android 10+ (API 29+), use app-specific directory due to Scoped Storage
+            outputDir = new File(context.getExternalFilesDir(null), "Konvert/Converted");
+        } else {
+            // For older Android versions, use public storage
+            outputDir = new File(Environment.getExternalStorageDirectory(), "Konvert/Converted");
+        }
         
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                // For Android 10+, use MediaStore
-                ContentValues values = new ContentValues();
-                values.put(MediaStore.Downloads.DISPLAY_NAME, fileName);
-                values.put(MediaStore.Downloads.MIME_TYPE, "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
-                values.put(MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS + "/Konvert");
-                
-                Uri uri = context.getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
-                if (uri != null) {
-                    outputStream = context.getContentResolver().openOutputStream(uri);
-                    document.write(outputStream);
-                    filePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getPath() 
-                             + "/Konvert/" + fileName;
-                } else {
-                    throw new IOException("Failed to create output file");
-                }
-            } else {
-                // For Android 9 and below, use direct file access
-                File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-                File konvertDir = new File(downloadsDir, "Konvert");
-                if (!konvertDir.exists()) {
-                    if (!konvertDir.mkdirs()) {
-                        throw new IOException("Failed to create directory: " + konvertDir.getAbsolutePath());
-                    }
-                }
-                
-                File outputFile = new File(konvertDir, fileName);
-                outputStream = new FileOutputStream(outputFile);
-                document.write(outputStream);
-                filePath = outputFile.getAbsolutePath();
+        // Create directory if it doesn't exist
+        if (!outputDir.exists()) {
+            boolean dirCreated = outputDir.mkdirs();
+            Log.d(TAG, "Created output directory: " + dirCreated + " at " + outputDir.getAbsolutePath());
+            if (!dirCreated) {
+                Log.w(TAG, "Failed to create output directory, falling back to app-specific storage");
+                // Fallback to app-specific storage if public directory creation fails
+                outputDir = new File(context.getExternalFilesDir(null), "Konvert/Converted");
+                outputDir.mkdirs();
             }
+        }
+        
+        File outputFile = new File(outputDir, fileName);
+        
+        // Save the document
+        OutputStream outputStream = null;
+        try {
+            outputStream = new FileOutputStream(outputFile);
+            document.write(outputStream);
             
-            return filePath;
+            // Add to MediaStore for visibility in file browsers
+            addToMediaStore(context, outputFile);
+            
+            return outputFile.getAbsolutePath();
         } finally {
             if (outputStream != null) {
                 try {
                     outputStream.close();
                 } catch (IOException e) {
                     Log.e(TAG, "Error closing output stream", e);
-                    // Don't rethrow as we're in finally block
                 }
             }
             try {
                 document.close();
             } catch (IOException e) {
                 Log.e(TAG, "Error closing document", e);
-                // Don't rethrow as we're in finally block
             }
         }
     }
@@ -246,5 +243,67 @@ public class PdfToDocxConverter {
         String timestamp = sdf.format(new Date());
         
         return baseName + "_" + timestamp + ".docx";
+    }
+    
+    /**
+     * Add the generated file to the MediaStore so it appears in the gallery
+     * 
+     * @param context Application context
+     * @param file File to add
+     */
+    private static void addToMediaStore(Context context, File file) {
+        try {
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.MediaColumns.DISPLAY_NAME, file.getName());
+            values.put(MediaStore.MediaColumns.MIME_TYPE, "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+            
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                // For Android 10+ (API 29+), use relative path and is_pending flag
+                values.put(MediaStore.MediaColumns.RELATIVE_PATH, "Documents/Konvert/Converted");
+                values.put(MediaStore.MediaColumns.IS_PENDING, 0);
+                
+                // On Android 10+, we should use the MediaStore API to make files visible
+                ContentResolver resolver = context.getContentResolver();
+                Uri uri = resolver.insert(MediaStore.Files.getContentUri("external"), values);
+                
+                if (uri != null) {
+                    // If we're using app-specific storage, copy the file to the MediaStore
+                    if (file.getAbsolutePath().contains(context.getExternalFilesDir(null).getAbsolutePath())) {
+                        try (OutputStream os = resolver.openOutputStream(uri);
+                             FileInputStream fis = new FileInputStream(file)) {
+                            
+                            if (os != null) {
+                                byte[] buffer = new byte[4096];
+                                int bytesRead;
+                                while ((bytesRead = fis.read(buffer)) != -1) {
+                                    os.write(buffer, 0, bytesRead);
+                                }
+                                os.flush();
+                            }
+                        }
+                    }
+                    
+                    Log.d(TAG, "Added file to MediaStore: " + uri);
+                } else {
+                    Log.w(TAG, "Failed to add file to MediaStore");
+                }
+            } else {
+                // For older Android versions, use DATA field with absolute path
+                values.put(MediaStore.MediaColumns.DATA, file.getAbsolutePath());
+                
+                ContentResolver resolver = context.getContentResolver();
+                Uri uri = resolver.insert(MediaStore.Files.getContentUri("external"), values);
+                
+                if (uri != null) {
+                    Log.d(TAG, "Added file to MediaStore: " + uri);
+                } else {
+                    Log.w(TAG, "Failed to add file to MediaStore");
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error adding file to MediaStore", e);
+            // Don't throw the exception, just log it
+            // The conversion is still successful even if the file isn't added to MediaStore
+        }
     }
 }
