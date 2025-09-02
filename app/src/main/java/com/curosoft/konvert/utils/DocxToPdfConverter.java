@@ -46,27 +46,8 @@ public class DocxToPdfConverter {
         String fileName = getFileName(context, docxUri);
         String outputFileName = getOutputFileName(fileName);
         
-        // Create the output directory based on Android version
-        File outputDir;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            // For Android 10+ (API 29+), use app-specific directory due to Scoped Storage
-            outputDir = new File(context.getExternalFilesDir(null), "Konvert/Converted");
-        } else {
-            // For older Android versions, use public storage
-            outputDir = new File(Environment.getExternalStorageDirectory(), "Konvert/Converted");
-        }
-        
-        // Create directory if it doesn't exist
-        if (!outputDir.exists()) {
-            boolean dirCreated = outputDir.mkdirs();
-            Log.d(TAG, "Created output directory: " + dirCreated + " at " + outputDir.getAbsolutePath());
-            if (!dirCreated) {
-                Log.w(TAG, "Failed to create output directory, falling back to app-specific storage");
-                // Fallback to app-specific storage if public directory creation fails
-                outputDir = new File(context.getExternalFilesDir(null), "Konvert/Converted");
-                outputDir.mkdirs();
-            }
-        }
+        // Get the output directory using the FileStorageUtils
+        File outputDir = FileStorageUtils.getOutputDirectory(context);
         
         // Create temporary input and output files
         File tempInput = new File(context.getCacheDir(), "temp_input.docx");
