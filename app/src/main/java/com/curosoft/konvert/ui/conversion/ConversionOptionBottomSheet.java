@@ -22,7 +22,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.curosoft.konvert.R;
+import com.curosoft.konvert.utils.DocxToOdtConverter;
 import com.curosoft.konvert.utils.DocxToPdfConverter;
+import com.curosoft.konvert.utils.DocxToRtfConverter;
+import com.curosoft.konvert.utils.DocxToTxtConverter;
 import com.curosoft.konvert.utils.EnhancedFilePickerUtils;
 import com.curosoft.konvert.utils.PdfToDocxConverter;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
@@ -159,7 +162,7 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
         
         btnProceed.setOnClickListener(v -> {
             if (selectedFile != null && selectedFormat != null) {
-                // Handle PDF to DOCX and DOCX to PDF conversions
+                // Handle document conversions
                 if (category.equalsIgnoreCase("docs")) {
                     // PDF to DOCX conversion
                     if ((selectedMimeType != null && selectedMimeType.contains("pdf") || 
@@ -176,9 +179,36 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
                             selectedFormat.equalsIgnoreCase("PDF")) {
                         
                         performDocxToPdfConversion();
+                    }
+                    // DOCX to TXT conversion
+                    else if ((selectedMimeType != null && 
+                             (selectedMimeType.contains("docx") || 
+                              selectedMimeType.contains("wordprocessingml")) || 
+                             selectedFileName.toLowerCase().endsWith(".docx")) &&
+                            selectedFormat.equalsIgnoreCase("TXT")) {
+                        
+                        performDocxToTxtConversion();
+                    }
+                    // DOCX to RTF conversion
+                    else if ((selectedMimeType != null && 
+                             (selectedMimeType.contains("docx") || 
+                              selectedMimeType.contains("wordprocessingml")) || 
+                             selectedFileName.toLowerCase().endsWith(".docx")) &&
+                            selectedFormat.equalsIgnoreCase("RTF")) {
+                        
+                        performDocxToRtfConversion();
+                    }
+                    // DOCX to ODT conversion
+                    else if ((selectedMimeType != null && 
+                             (selectedMimeType.contains("docx") || 
+                              selectedMimeType.contains("wordprocessingml")) || 
+                             selectedFileName.toLowerCase().endsWith(".docx")) &&
+                            selectedFormat.equalsIgnoreCase("ODT")) {
+                        
+                        performDocxToOdtConversion();
                     } else {
                         Toast.makeText(requireContext(), 
-                                "Only PDF to DOCX and DOCX to PDF conversions are currently supported", 
+                                "This conversion is not supported yet", 
                                 Toast.LENGTH_SHORT).show();
                     }
                 } else {
@@ -204,6 +234,18 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
         new DocxToPdfConversionTask(requireContext(), originalFileUri).execute();
     }
     
+    private void performDocxToTxtConversion() {
+        new DocxToTxtConversionTask(requireContext(), originalFileUri).execute();
+    }
+    
+    private void performDocxToRtfConversion() {
+        new DocxToRtfConversionTask(requireContext(), originalFileUri).execute();
+    }
+    
+    private void performDocxToOdtConversion() {
+        new DocxToOdtConversionTask(requireContext(), originalFileUri).execute();
+    }
+    
     private void updateFileNameDisplay(String fileName) {
         if (fileName != null && !fileName.isEmpty()) {
             fileNameText.setText(fileName);
@@ -216,24 +258,35 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
     }
     
     private void updateProceedButtonState() {
-        // Check if it's a PDF file and the selected format is DOCX
-        boolean isPdfToDocx = category.equalsIgnoreCase("docs") && 
-                              selectedFile != null &&
-                              (selectedMimeType != null && selectedMimeType.contains("pdf") || 
-                               selectedFileName != null && selectedFileName.toLowerCase().endsWith(".pdf")) &&
-                              selectedFormat != null &&
-                              selectedFormat.equalsIgnoreCase("DOCX");
+        // Check if a file and format are selected
+        if (selectedFile == null || selectedFormat == null) {
+            btnProceed.setEnabled(false);
+            return;
+        }
         
-        // Check if it's a DOCX file and the selected format is PDF
-        boolean isDocxToPdf = category.equalsIgnoreCase("docs") && 
-                              selectedFile != null &&
-                              (selectedMimeType != null && 
-                               (selectedMimeType.contains("docx") || selectedMimeType.contains("wordprocessingml")) || 
-                               selectedFileName != null && selectedFileName.toLowerCase().endsWith(".docx")) &&
-                              selectedFormat != null &&
-                              selectedFormat.equalsIgnoreCase("PDF");
+        // Only handle document conversions for now
+        if (!category.equalsIgnoreCase("docs")) {
+            btnProceed.setEnabled(false);
+            return;
+        }
         
-        btnProceed.setEnabled(selectedFile != null && selectedFormat != null && (isPdfToDocx || isDocxToPdf));
+        boolean isDocxFile = (selectedMimeType != null && 
+                         (selectedMimeType.contains("docx") || selectedMimeType.contains("wordprocessingml")) || 
+                         selectedFileName != null && selectedFileName.toLowerCase().endsWith(".docx"));
+        
+        boolean isPdfFile = (selectedMimeType != null && selectedMimeType.contains("pdf") || 
+                       selectedFileName != null && selectedFileName.toLowerCase().endsWith(".pdf"));
+        
+        // Check for supported conversions
+        boolean isPdfToDocx = isPdfFile && selectedFormat.equalsIgnoreCase("DOCX");
+        
+        boolean isDocxToPdf = isDocxFile && selectedFormat.equalsIgnoreCase("PDF");
+        boolean isDocxToTxt = isDocxFile && selectedFormat.equalsIgnoreCase("TXT");
+        boolean isDocxToRtf = isDocxFile && selectedFormat.equalsIgnoreCase("RTF");
+        boolean isDocxToOdt = isDocxFile && selectedFormat.equalsIgnoreCase("ODT");
+        
+        // Enable button only for supported conversions
+        btnProceed.setEnabled(isPdfToDocx || isDocxToPdf || isDocxToTxt || isDocxToRtf || isDocxToOdt);
     }
     
     private List<String> getFormatsForCategory(String category) {
@@ -349,6 +402,156 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
         protected String doInBackground(Void... voids) {
             try {
                 return DocxToPdfConverter.convertDocxToPdf(context, docxUri);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+        
+        @Override
+        protected void onPostExecute(String outputPath) {
+            if (progressDialog.isShowing()) {
+                progressDialog.dismiss();
+            }
+            
+            if (outputPath != null) {
+                Toast.makeText(context, 
+                        "Conversion successful! File saved to:\n" + outputPath, 
+                        Toast.LENGTH_LONG).show();
+                dismiss();
+            } else {
+                Toast.makeText(context, 
+                        "Conversion failed. Please try again.", 
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+    
+    /**
+     * AsyncTask to perform the DOCX to TXT conversion in the background
+     */
+    private class DocxToTxtConversionTask extends AsyncTask<Void, Void, String> {
+        private Context context;
+        private Uri docxUri;
+        private ProgressDialog progressDialog;
+        
+        public DocxToTxtConversionTask(Context context, Uri docxUri) {
+            this.context = context;
+            this.docxUri = docxUri;
+        }
+        
+        @Override
+        protected void onPreExecute() {
+            progressDialog = new ProgressDialog(context);
+            progressDialog.setMessage("Converting DOCX to TXT...");
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+        }
+        
+        @Override
+        protected String doInBackground(Void... voids) {
+            try {
+                return DocxToTxtConverter.convertDocxToTxt(context, docxUri);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+        
+        @Override
+        protected void onPostExecute(String outputPath) {
+            if (progressDialog.isShowing()) {
+                progressDialog.dismiss();
+            }
+            
+            if (outputPath != null) {
+                Toast.makeText(context, 
+                        "Conversion successful! File saved to:\n" + outputPath, 
+                        Toast.LENGTH_LONG).show();
+                dismiss();
+            } else {
+                Toast.makeText(context, 
+                        "Conversion failed. Please try again.", 
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+    
+    /**
+     * AsyncTask to perform the DOCX to RTF conversion in the background
+     */
+    private class DocxToRtfConversionTask extends AsyncTask<Void, Void, String> {
+        private Context context;
+        private Uri docxUri;
+        private ProgressDialog progressDialog;
+        
+        public DocxToRtfConversionTask(Context context, Uri docxUri) {
+            this.context = context;
+            this.docxUri = docxUri;
+        }
+        
+        @Override
+        protected void onPreExecute() {
+            progressDialog = new ProgressDialog(context);
+            progressDialog.setMessage("Converting DOCX to RTF...");
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+        }
+        
+        @Override
+        protected String doInBackground(Void... voids) {
+            try {
+                return DocxToRtfConverter.convertDocxToRtf(context, docxUri);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+        
+        @Override
+        protected void onPostExecute(String outputPath) {
+            if (progressDialog.isShowing()) {
+                progressDialog.dismiss();
+            }
+            
+            if (outputPath != null) {
+                Toast.makeText(context, 
+                        "Conversion successful! File saved to:\n" + outputPath, 
+                        Toast.LENGTH_LONG).show();
+                dismiss();
+            } else {
+                Toast.makeText(context, 
+                        "Conversion failed. Please try again.", 
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+    
+    /**
+     * AsyncTask to perform the DOCX to ODT conversion in the background
+     */
+    private class DocxToOdtConversionTask extends AsyncTask<Void, Void, String> {
+        private Context context;
+        private Uri docxUri;
+        private ProgressDialog progressDialog;
+        
+        public DocxToOdtConversionTask(Context context, Uri docxUri) {
+            this.context = context;
+            this.docxUri = docxUri;
+        }
+        
+        @Override
+        protected void onPreExecute() {
+            progressDialog = new ProgressDialog(context);
+            progressDialog.setMessage("Converting DOCX to ODT...");
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+        }
+        
+        @Override
+        protected String doInBackground(Void... voids) {
+            try {
+                return DocxToOdtConverter.convertDocxToOdt(context, docxUri);
             } catch (Exception e) {
                 e.printStackTrace();
                 return null;
