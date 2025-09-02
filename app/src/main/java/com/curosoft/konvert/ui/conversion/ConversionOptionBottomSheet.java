@@ -28,6 +28,9 @@ import com.curosoft.konvert.utils.DocxToRtfConverter;
 import com.curosoft.konvert.utils.DocxToTxtConverter;
 import com.curosoft.konvert.utils.EnhancedFilePickerUtils;
 import com.curosoft.konvert.utils.PdfToDocxConverter;
+import com.curosoft.konvert.utils.PdfToTxtConverter;
+import com.curosoft.konvert.utils.PdfToRtfConverter;
+import com.curosoft.konvert.utils.PdfToOdtConverter;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
@@ -206,6 +209,27 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
                             selectedFormat.equalsIgnoreCase("ODT")) {
                         
                         performDocxToOdtConversion();
+                    }
+                    // PDF to TXT conversion
+                    else if ((selectedMimeType != null && selectedMimeType.contains("pdf") || 
+                             selectedFileName.toLowerCase().endsWith(".pdf")) &&
+                            selectedFormat.equalsIgnoreCase("TXT")) {
+                        
+                        performPdfToTxtConversion();
+                    }
+                    // PDF to RTF conversion
+                    else if ((selectedMimeType != null && selectedMimeType.contains("pdf") || 
+                             selectedFileName.toLowerCase().endsWith(".pdf")) &&
+                            selectedFormat.equalsIgnoreCase("RTF")) {
+                        
+                        performPdfToRtfConversion();
+                    }
+                    // PDF to ODT conversion
+                    else if ((selectedMimeType != null && selectedMimeType.contains("pdf") || 
+                             selectedFileName.toLowerCase().endsWith(".pdf")) &&
+                            selectedFormat.equalsIgnoreCase("ODT")) {
+                        
+                        performPdfToOdtConversion();
                     } else {
                         Toast.makeText(requireContext(), 
                                 "This conversion is not supported yet", 
@@ -246,6 +270,18 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
         new DocxToOdtConversionTask(requireContext(), originalFileUri).execute();
     }
     
+    private void performPdfToTxtConversion() {
+        new PdfToTxtConversionTask(requireContext(), originalFileUri).execute();
+    }
+    
+    private void performPdfToRtfConversion() {
+        new PdfToRtfConversionTask(requireContext(), originalFileUri).execute();
+    }
+    
+    private void performPdfToOdtConversion() {
+        new PdfToOdtConversionTask(requireContext(), originalFileUri).execute();
+    }
+    
     private void updateFileNameDisplay(String fileName) {
         if (fileName != null && !fileName.isEmpty()) {
             fileNameText.setText(fileName);
@@ -279,6 +315,9 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
         
         // Check for supported conversions
         boolean isPdfToDocx = isPdfFile && selectedFormat.equalsIgnoreCase("DOCX");
+        boolean isPdfToTxt = isPdfFile && selectedFormat.equalsIgnoreCase("TXT");
+        boolean isPdfToRtf = isPdfFile && selectedFormat.equalsIgnoreCase("RTF");
+        boolean isPdfToOdt = isPdfFile && selectedFormat.equalsIgnoreCase("ODT");
         
         boolean isDocxToPdf = isDocxFile && selectedFormat.equalsIgnoreCase("PDF");
         boolean isDocxToTxt = isDocxFile && selectedFormat.equalsIgnoreCase("TXT");
@@ -286,7 +325,8 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
         boolean isDocxToOdt = isDocxFile && selectedFormat.equalsIgnoreCase("ODT");
         
         // Enable button only for supported conversions
-        btnProceed.setEnabled(isPdfToDocx || isDocxToPdf || isDocxToTxt || isDocxToRtf || isDocxToOdt);
+        btnProceed.setEnabled(isPdfToDocx || isPdfToTxt || isPdfToRtf || isPdfToOdt || 
+                             isDocxToPdf || isDocxToTxt || isDocxToRtf || isDocxToOdt);
     }
     
     private List<String> getFormatsForCategory(String category) {
@@ -552,6 +592,156 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
         protected String doInBackground(Void... voids) {
             try {
                 return DocxToOdtConverter.convertDocxToOdt(context, docxUri);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+        
+        @Override
+        protected void onPostExecute(String outputPath) {
+            if (progressDialog.isShowing()) {
+                progressDialog.dismiss();
+            }
+            
+            if (outputPath != null) {
+                Toast.makeText(context, 
+                        "Conversion successful! File saved to:\n" + outputPath, 
+                        Toast.LENGTH_LONG).show();
+                dismiss();
+            } else {
+                Toast.makeText(context, 
+                        "Conversion failed. Please try again.", 
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+    
+    /**
+     * AsyncTask to perform the PDF to TXT conversion in the background
+     */
+    private class PdfToTxtConversionTask extends AsyncTask<Void, Void, String> {
+        private Context context;
+        private Uri pdfUri;
+        private ProgressDialog progressDialog;
+        
+        public PdfToTxtConversionTask(Context context, Uri pdfUri) {
+            this.context = context;
+            this.pdfUri = pdfUri;
+        }
+        
+        @Override
+        protected void onPreExecute() {
+            progressDialog = new ProgressDialog(context);
+            progressDialog.setMessage("Converting PDF to TXT...");
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+        }
+        
+        @Override
+        protected String doInBackground(Void... voids) {
+            try {
+                return PdfToTxtConverter.convertPdfToTxt(context, pdfUri);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+        
+        @Override
+        protected void onPostExecute(String outputPath) {
+            if (progressDialog.isShowing()) {
+                progressDialog.dismiss();
+            }
+            
+            if (outputPath != null) {
+                Toast.makeText(context, 
+                        "Conversion successful! File saved to:\n" + outputPath, 
+                        Toast.LENGTH_LONG).show();
+                dismiss();
+            } else {
+                Toast.makeText(context, 
+                        "Conversion failed. Please try again.", 
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+    
+    /**
+     * AsyncTask to perform the PDF to RTF conversion in the background
+     */
+    private class PdfToRtfConversionTask extends AsyncTask<Void, Void, String> {
+        private Context context;
+        private Uri pdfUri;
+        private ProgressDialog progressDialog;
+        
+        public PdfToRtfConversionTask(Context context, Uri pdfUri) {
+            this.context = context;
+            this.pdfUri = pdfUri;
+        }
+        
+        @Override
+        protected void onPreExecute() {
+            progressDialog = new ProgressDialog(context);
+            progressDialog.setMessage("Converting PDF to RTF...");
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+        }
+        
+        @Override
+        protected String doInBackground(Void... voids) {
+            try {
+                return PdfToRtfConverter.convertPdfToRtf(context, pdfUri);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+        
+        @Override
+        protected void onPostExecute(String outputPath) {
+            if (progressDialog.isShowing()) {
+                progressDialog.dismiss();
+            }
+            
+            if (outputPath != null) {
+                Toast.makeText(context, 
+                        "Conversion successful! File saved to:\n" + outputPath, 
+                        Toast.LENGTH_LONG).show();
+                dismiss();
+            } else {
+                Toast.makeText(context, 
+                        "Conversion failed. Please try again.", 
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+    
+    /**
+     * AsyncTask to perform the PDF to ODT conversion in the background
+     */
+    private class PdfToOdtConversionTask extends AsyncTask<Void, Void, String> {
+        private Context context;
+        private Uri pdfUri;
+        private ProgressDialog progressDialog;
+        
+        public PdfToOdtConversionTask(Context context, Uri pdfUri) {
+            this.context = context;
+            this.pdfUri = pdfUri;
+        }
+        
+        @Override
+        protected void onPreExecute() {
+            progressDialog = new ProgressDialog(context);
+            progressDialog.setMessage("Converting PDF to ODT...");
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+        }
+        
+        @Override
+        protected String doInBackground(Void... voids) {
+            try {
+                return PdfToOdtConverter.convertPdfToOdt(context, pdfUri);
             } catch (Exception e) {
                 e.printStackTrace();
                 return null;
