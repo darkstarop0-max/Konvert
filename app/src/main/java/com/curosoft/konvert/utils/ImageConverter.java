@@ -1,4 +1,3 @@
-
 package com.curosoft.konvert.utils;
 
 import android.database.Cursor;
@@ -14,6 +13,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -53,6 +53,7 @@ public class ImageConverter {
 
             if (bitmap == null) {
                 Log.e(TAG, "Bitmap decode failed: Bitmap is null");
+                showToast(context, "Invalid PNG file.");
                 return false;
             }
 
@@ -60,7 +61,7 @@ public class ImageConverter {
             String ext = targetFormat.toLowerCase();
             String baseName = getBaseName(context, inputUri);
             String outFileName = baseName + "_converted." + ext;
-            File outDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), "Konvert/Converted/Images");
+            File outDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), "Konvert/Converted");
             if (!outDir.exists()) outDir.mkdirs();
             outFile = new File(outDir, outFileName);
             outStream = new FileOutputStream(outFile);
@@ -71,24 +72,14 @@ public class ImageConverter {
                     break;
                 case "webp":
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                        result = bitmap.compress(Bitmap.CompressFormat.WEBP_LOSSLESS, 100, outStream);
+                        result = bitmap.compress(Bitmap.CompressFormat.WEBP_LOSSLESS, 90, outStream);
                     } else {
-                        result = bitmap.compress(Bitmap.CompressFormat.WEBP, 100, outStream);
+                        result = bitmap.compress(Bitmap.CompressFormat.WEBP, 90, outStream);
                     }
                     break;
                 case "jpeg":
                 case "jpg":
-                    result = bitmap.compress(Bitmap.CompressFormat.JPEG, 95, outStream);
-                    break;
-                case "heic":
-                    Log.e(TAG, "HEIC conversion is not supported on this device.");
-                    result = false;
-                    break;
-                case "bmp":
-                    result = saveBmp(bitmap, outStream);
-                    break;
-                case "gif":
-                    result = saveGif(bitmap, outStream);
+                    result = bitmap.compress(Bitmap.CompressFormat.JPEG, 90, outStream);
                     break;
                 default:
                     result = false;
@@ -101,11 +92,13 @@ public class ImageConverter {
                 addToMediaStore(context, outFile, ext);
             } else {
                 if (outFile != null && outFile.exists()) outFile.delete();
+                showToast(context, "Conversion failed.");
             }
             return result && outFile != null && outFile.length() > 0;
         } catch (Exception e) {
             Log.e(TAG, "Image conversion failed", e);
             if (outFile != null && outFile.exists()) outFile.delete();
+            showToast(context, "Conversion failed.");
             return false;
         } finally {
             if (bitmap != null) bitmap.recycle();
@@ -199,5 +192,10 @@ public class ImageConverter {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    private static void showToast(Context context, String msg) {
+        android.os.Handler handler = new android.os.Handler(context.getMainLooper());
+        handler.post(() -> Toast.makeText(context, msg, Toast.LENGTH_SHORT).show());
     }
 }

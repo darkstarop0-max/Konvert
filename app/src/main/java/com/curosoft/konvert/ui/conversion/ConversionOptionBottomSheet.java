@@ -164,13 +164,18 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
         
         btnProceed.setOnClickListener(v -> {
             if (selectedFile != null && selectedFormat != null) {
-                // Handle image conversions
                 if (category.equalsIgnoreCase("images")) {
                     boolean isJpgFile = (selectedMimeType != null && (selectedMimeType.contains("jpg") || selectedMimeType.contains("jpeg")) ||
                             selectedFileName != null && (selectedFileName.toLowerCase().endsWith(".jpg") || selectedFileName.toLowerCase().endsWith(".jpeg")));
-                    List<String> imageTargets = Arrays.asList("PNG", "WEBP", "HEIC", "BMP", "GIF");
+                    boolean isPngFile = (selectedMimeType != null && selectedMimeType.contains("png") ||
+                            selectedFileName != null && selectedFileName.toLowerCase().endsWith(".png"));
+                    List<String> imageTargets = Arrays.asList("PNG", "WEBP", "JPG");
                     if (isJpgFile && imageTargets.contains(selectedFormat.toUpperCase())) {
                         new JpgImageConversionTask(requireContext(), originalFileUri, selectedFormat.toUpperCase()).execute();
+                        return;
+                    }
+                    if (isPngFile && (selectedFormat.equalsIgnoreCase("JPG") || selectedFormat.equalsIgnoreCase("WEBP"))) {
+                        new PngImageConversionTask(requireContext(), originalFileUri, selectedFormat.toUpperCase()).execute();
                         return;
                     }
                 }
@@ -282,68 +287,60 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
     }
     
     private void updateProceedButtonState() {
-    // Check if a file and format are selected
-    if (selectedFile == null || selectedFormat == null) {
+        if (selectedFile == null || selectedFormat == null) {
+            btnProceed.setEnabled(false);
+            return;
+        }
+
+        if (category.equalsIgnoreCase("docs")) {
+            boolean isDocxFile = (selectedMimeType != null &&
+                (selectedMimeType.contains("docx") || selectedMimeType.contains("wordprocessingml")) ||
+                selectedFileName != null && selectedFileName.toLowerCase().endsWith(".docx"));
+            boolean isPdfFile = (selectedMimeType != null && selectedMimeType.contains("pdf") ||
+                selectedFileName != null && selectedFileName.toLowerCase().endsWith(".pdf"));
+            boolean isTxtFile = (selectedMimeType != null &&
+                (selectedMimeType.contains("text/plain") || selectedMimeType.contains("text/txt")) ||
+                selectedFileName != null && selectedFileName.toLowerCase().endsWith(".txt"));
+            boolean isPdfToDocx = isPdfFile && selectedFormat.equalsIgnoreCase("DOCX");
+            boolean isPdfToTxt = isPdfFile && selectedFormat.equalsIgnoreCase("TXT");
+            boolean isDocxToPdf = isDocxFile && selectedFormat.equalsIgnoreCase("PDF");
+            boolean isDocxToTxt = isDocxFile && selectedFormat.equalsIgnoreCase("TXT");
+            boolean isTxtToDocx = isTxtFile && selectedFormat.equalsIgnoreCase("DOCX");
+            boolean isTxtToPdf = isTxtFile && selectedFormat.equalsIgnoreCase("PDF");
+            btnProceed.setEnabled(isPdfToDocx || isPdfToTxt ||
+                isDocxToPdf || isDocxToTxt ||
+                isTxtToDocx || isTxtToPdf);
+            return;
+        }
+
+        if (category.equalsIgnoreCase("images")) {
+            boolean isJpgFile = (selectedMimeType != null && (selectedMimeType.contains("jpg") || selectedMimeType.contains("jpeg")) ||
+                selectedFileName != null && (selectedFileName.toLowerCase().endsWith(".jpg") || selectedFileName.toLowerCase().endsWith(".jpeg")));
+            boolean isPngFile = (selectedMimeType != null && selectedMimeType.contains("png") ||
+                selectedFileName != null && selectedFileName.toLowerCase().endsWith(".png"));
+            List<String> imageTargets = Arrays.asList("PNG", "WEBP", "JPG");
+            boolean isSupportedJpg = isJpgFile && imageTargets.contains(selectedFormat.toUpperCase());
+            boolean isSupportedPng = isPngFile && (selectedFormat.equalsIgnoreCase("JPG") || selectedFormat.equalsIgnoreCase("WEBP"));
+            btnProceed.setEnabled(isSupportedJpg || isSupportedPng);
+            return;
+        }
+
         btnProceed.setEnabled(false);
-        return;
-    }
-
-    if (category.equalsIgnoreCase("docs")) {
-        boolean isDocxFile = (selectedMimeType != null &&
-            (selectedMimeType.contains("docx") || selectedMimeType.contains("wordprocessingml")) ||
-            selectedFileName != null && selectedFileName.toLowerCase().endsWith(".docx"));
-
-        boolean isPdfFile = (selectedMimeType != null && selectedMimeType.contains("pdf") ||
-            selectedFileName != null && selectedFileName.toLowerCase().endsWith(".pdf"));
-
-        boolean isTxtFile = (selectedMimeType != null &&
-            (selectedMimeType.contains("text/plain") || selectedMimeType.contains("text/txt")) ||
-            selectedFileName != null && selectedFileName.toLowerCase().endsWith(".txt"));
-
-        // Check for supported conversions
-        boolean isPdfToDocx = isPdfFile && selectedFormat.equalsIgnoreCase("DOCX");
-        boolean isPdfToTxt = isPdfFile && selectedFormat.equalsIgnoreCase("TXT");
-
-        boolean isDocxToPdf = isDocxFile && selectedFormat.equalsIgnoreCase("PDF");
-        boolean isDocxToTxt = isDocxFile && selectedFormat.equalsIgnoreCase("TXT");
-
-        boolean isTxtToDocx = isTxtFile && selectedFormat.equalsIgnoreCase("DOCX");
-        boolean isTxtToPdf = isTxtFile && selectedFormat.equalsIgnoreCase("PDF");
-
-        btnProceed.setEnabled(isPdfToDocx || isPdfToTxt ||
-            isDocxToPdf || isDocxToTxt ||
-            isTxtToDocx || isTxtToPdf);
-        return;
-    }
-
-    if (category.equalsIgnoreCase("images")) {
-        boolean isJpgFile = (selectedMimeType != null && (selectedMimeType.contains("jpg") || selectedMimeType.contains("jpeg")) ||
-            selectedFileName != null && (selectedFileName.toLowerCase().endsWith(".jpg") || selectedFileName.toLowerCase().endsWith(".jpeg")));
-        List<String> imageTargets = Arrays.asList("PNG", "WEBP", "HEIC", "BMP", "GIF");
-        boolean isSupportedImageConversion = isJpgFile && imageTargets.contains(selectedFormat.toUpperCase());
-        btnProceed.setEnabled(isSupportedImageConversion);
-        return;
-    }
-
-    // Default: disable
-    btnProceed.setEnabled(false);
     }
     
     private List<String> getFormatsForCategory(String category) {
-        // Use the formats defined in EnhancedFilePickerUtils.SupportedFileTypes
         List<String> formats = new ArrayList<>();
-        
         switch (category.toLowerCase()) {
             case "docs":
-                // Convert all extensions to uppercase for display
                 for (String ext : EnhancedFilePickerUtils.SupportedFileTypes.DOCS) {
                     formats.add(ext.toUpperCase());
                 }
                 break;
             case "images":
-                for (String ext : EnhancedFilePickerUtils.SupportedFileTypes.IMAGES) {
-                    formats.add(ext.toUpperCase());
-                }
+                // Restore PNG, WEBP, and JPG as supported output formats
+                formats.add("PNG");
+                formats.add("WEBP");
+                formats.add("JPG");
                 break;
             case "audio":
                 for (String ext : EnhancedFilePickerUtils.SupportedFileTypes.AUDIO) {
@@ -363,7 +360,6 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
             default:
                 return new ArrayList<>();
         }
-        
         return formats;
     }
     
@@ -711,6 +707,45 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
                 dismiss();
             } else {
                 Toast.makeText(context, "Conversion failed. Please try again.", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+    
+    /**
+     * AsyncTask for PNG image conversion
+     */
+    private class PngImageConversionTask extends AsyncTask<Void, Void, Boolean> {
+        private Context context;
+        private Uri inputUri;
+        private String targetFormat;
+        private ProgressDialog progressDialog;
+        
+        public PngImageConversionTask(Context context, Uri inputUri, String targetFormat) {
+            this.context = context;
+            this.inputUri = inputUri;
+            this.targetFormat = targetFormat;
+        }
+        
+        @Override
+        protected void onPreExecute() {
+            progressDialog = new ProgressDialog(context);
+            progressDialog.setMessage("Converting PNG to " + targetFormat + "...");
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+        }
+        
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            return ImageConverter.convertImage(context, inputUri, targetFormat);
+        }
+        
+        @Override
+        protected void onPostExecute(Boolean result) {
+            if (progressDialog.isShowing()) progressDialog.dismiss();
+            // Success/failure toast is handled in ImageConverter
+            if (result) {
+                Toast.makeText(context, "Conversion successful! Saved to Documents/Konvert/Converted/", Toast.LENGTH_LONG).show();
+                dismiss();
             }
         }
     }
