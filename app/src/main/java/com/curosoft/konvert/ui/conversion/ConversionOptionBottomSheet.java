@@ -169,6 +169,8 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
                             selectedFileName != null && (selectedFileName.toLowerCase().endsWith(".jpg") || selectedFileName.toLowerCase().endsWith(".jpeg")));
                     boolean isPngFile = (selectedMimeType != null && selectedMimeType.contains("png") ||
                             selectedFileName != null && selectedFileName.toLowerCase().endsWith(".png"));
+                    boolean isWebpFile = (selectedMimeType != null && selectedMimeType.contains("webp") ||
+                            selectedFileName != null && selectedFileName.toLowerCase().endsWith(".webp"));
                     List<String> imageTargets = Arrays.asList("PNG", "WEBP", "JPG");
                     if (isJpgFile && imageTargets.contains(selectedFormat.toUpperCase())) {
                         new JpgImageConversionTask(requireContext(), originalFileUri, selectedFormat.toUpperCase()).execute();
@@ -176,6 +178,10 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
                     }
                     if (isPngFile && (selectedFormat.equalsIgnoreCase("JPG") || selectedFormat.equalsIgnoreCase("WEBP"))) {
                         new PngImageConversionTask(requireContext(), originalFileUri, selectedFormat.toUpperCase()).execute();
+                        return;
+                    }
+                    if (isWebpFile && (selectedFormat.equalsIgnoreCase("JPG") || selectedFormat.equalsIgnoreCase("PNG"))) {
+                        new WebpImageConversionTask(requireContext(), originalFileUri, selectedFormat.toLowerCase()).execute();
                         return;
                     }
                 }
@@ -318,10 +324,13 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
                 selectedFileName != null && (selectedFileName.toLowerCase().endsWith(".jpg") || selectedFileName.toLowerCase().endsWith(".jpeg")));
             boolean isPngFile = (selectedMimeType != null && selectedMimeType.contains("png") ||
                 selectedFileName != null && selectedFileName.toLowerCase().endsWith(".png"));
+            boolean isWebpFile = (selectedMimeType != null && selectedMimeType.contains("webp") ||
+                selectedFileName != null && selectedFileName.toLowerCase().endsWith(".webp"));
             List<String> imageTargets = Arrays.asList("PNG", "WEBP", "JPG");
             boolean isSupportedJpg = isJpgFile && imageTargets.contains(selectedFormat.toUpperCase());
             boolean isSupportedPng = isPngFile && (selectedFormat.equalsIgnoreCase("JPG") || selectedFormat.equalsIgnoreCase("WEBP"));
-            btnProceed.setEnabled(isSupportedJpg || isSupportedPng);
+            boolean isSupportedWebp = isWebpFile && (selectedFormat.equalsIgnoreCase("JPG") || selectedFormat.equalsIgnoreCase("PNG"));
+            btnProceed.setEnabled(isSupportedJpg || isSupportedPng || isSupportedWebp);
             return;
         }
 
@@ -337,7 +346,7 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
                 }
                 break;
             case "images":
-                // Restore PNG, WEBP, and JPG as supported output formats
+                // Only show valid output formats for each input type in UI logic (handled above)
                 formats.add("PNG");
                 formats.add("WEBP");
                 formats.add("JPG");
@@ -744,6 +753,44 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
             if (progressDialog.isShowing()) progressDialog.dismiss();
             // Success/failure toast is handled in ImageConverter
             if (result) {
+                Toast.makeText(context, "Conversion successful! Saved to Documents/Konvert/Converted/", Toast.LENGTH_LONG).show();
+                dismiss();
+            }
+        }
+    }
+    
+    /**
+     * AsyncTask for WEBP image conversion
+     */
+    private class WebpImageConversionTask extends AsyncTask<Void, Void, String> {
+        private Context context;
+        private Uri inputUri;
+        private String targetFormat;
+        private ProgressDialog progressDialog;
+        
+        public WebpImageConversionTask(Context context, Uri inputUri, String targetFormat) {
+            this.context = context;
+            this.inputUri = inputUri;
+            this.targetFormat = targetFormat;
+        }
+        
+        @Override
+        protected void onPreExecute() {
+            progressDialog = new ProgressDialog(context);
+            progressDialog.setMessage("Converting WEBP to " + targetFormat.toUpperCase() + "...");
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+        }
+        
+        @Override
+        protected String doInBackground(Void... voids) {
+            return com.curosoft.konvert.utils.WebpConverter.convertWebpToJpgOrPng(context, inputUri, targetFormat);
+        }
+        
+        @Override
+        protected void onPostExecute(String outputPath) {
+            if (progressDialog.isShowing()) progressDialog.dismiss();
+            if (outputPath != null) {
                 Toast.makeText(context, "Conversion successful! Saved to Documents/Konvert/Converted/", Toast.LENGTH_LONG).show();
                 dismiss();
             }
