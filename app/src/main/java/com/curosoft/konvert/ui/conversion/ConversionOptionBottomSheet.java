@@ -25,6 +25,7 @@ import com.curosoft.konvert.R;
 import com.curosoft.konvert.utils.DocxToPdfConverter;
 import com.curosoft.konvert.utils.DocxToTxtConverter;
 import com.curosoft.konvert.utils.EnhancedFilePickerUtils;
+import com.curosoft.konvert.utils.ImageConverter;
 import com.curosoft.konvert.utils.PdfToDocxConverter;
 import com.curosoft.konvert.utils.PdfToTxtConverter;
 import com.curosoft.konvert.utils.TxtToDocxConverter;
@@ -163,6 +164,16 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
         
         btnProceed.setOnClickListener(v -> {
             if (selectedFile != null && selectedFormat != null) {
+                // Handle image conversions
+                if (category.equalsIgnoreCase("images")) {
+                    boolean isJpgFile = (selectedMimeType != null && (selectedMimeType.contains("jpg") || selectedMimeType.contains("jpeg")) ||
+                            selectedFileName != null && (selectedFileName.toLowerCase().endsWith(".jpg") || selectedFileName.toLowerCase().endsWith(".jpeg")));
+                    List<String> imageTargets = Arrays.asList("PNG", "WEBP", "HEIC", "BMP", "GIF");
+                    if (isJpgFile && imageTargets.contains(selectedFormat.toUpperCase())) {
+                        new JpgImageConversionTask(requireContext(), originalFileUri, selectedFormat.toUpperCase()).execute();
+                        return;
+                    }
+                }
                 // Handle document conversions
                 if (category.equalsIgnoreCase("docs")) {
                     // PDF to DOCX conversion
@@ -271,43 +282,51 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
     }
     
     private void updateProceedButtonState() {
-        // Check if a file and format are selected
-        if (selectedFile == null || selectedFormat == null) {
-            btnProceed.setEnabled(false);
-            return;
-        }
-        
-        // Only handle document conversions for now
-        if (!category.equalsIgnoreCase("docs")) {
-            btnProceed.setEnabled(false);
-            return;
-        }
-        
-        boolean isDocxFile = (selectedMimeType != null && 
-                         (selectedMimeType.contains("docx") || selectedMimeType.contains("wordprocessingml")) || 
-                         selectedFileName != null && selectedFileName.toLowerCase().endsWith(".docx"));
-        
-        boolean isPdfFile = (selectedMimeType != null && selectedMimeType.contains("pdf") || 
-                       selectedFileName != null && selectedFileName.toLowerCase().endsWith(".pdf"));
-        
-        boolean isTxtFile = (selectedMimeType != null && 
-                        (selectedMimeType.contains("text/plain") || selectedMimeType.contains("text/txt")) || 
-                        selectedFileName != null && selectedFileName.toLowerCase().endsWith(".txt"));
-        
+    // Check if a file and format are selected
+    if (selectedFile == null || selectedFormat == null) {
+        btnProceed.setEnabled(false);
+        return;
+    }
+
+    if (category.equalsIgnoreCase("docs")) {
+        boolean isDocxFile = (selectedMimeType != null &&
+            (selectedMimeType.contains("docx") || selectedMimeType.contains("wordprocessingml")) ||
+            selectedFileName != null && selectedFileName.toLowerCase().endsWith(".docx"));
+
+        boolean isPdfFile = (selectedMimeType != null && selectedMimeType.contains("pdf") ||
+            selectedFileName != null && selectedFileName.toLowerCase().endsWith(".pdf"));
+
+        boolean isTxtFile = (selectedMimeType != null &&
+            (selectedMimeType.contains("text/plain") || selectedMimeType.contains("text/txt")) ||
+            selectedFileName != null && selectedFileName.toLowerCase().endsWith(".txt"));
+
         // Check for supported conversions
         boolean isPdfToDocx = isPdfFile && selectedFormat.equalsIgnoreCase("DOCX");
         boolean isPdfToTxt = isPdfFile && selectedFormat.equalsIgnoreCase("TXT");
-        
+
         boolean isDocxToPdf = isDocxFile && selectedFormat.equalsIgnoreCase("PDF");
         boolean isDocxToTxt = isDocxFile && selectedFormat.equalsIgnoreCase("TXT");
-        
+
         boolean isTxtToDocx = isTxtFile && selectedFormat.equalsIgnoreCase("DOCX");
         boolean isTxtToPdf = isTxtFile && selectedFormat.equalsIgnoreCase("PDF");
-        
-        // Enable button only for supported conversions
-        btnProceed.setEnabled(isPdfToDocx || isPdfToTxt || 
-                             isDocxToPdf || isDocxToTxt ||
-                             isTxtToDocx || isTxtToPdf);
+
+        btnProceed.setEnabled(isPdfToDocx || isPdfToTxt ||
+            isDocxToPdf || isDocxToTxt ||
+            isTxtToDocx || isTxtToPdf);
+        return;
+    }
+
+    if (category.equalsIgnoreCase("images")) {
+        boolean isJpgFile = (selectedMimeType != null && (selectedMimeType.contains("jpg") || selectedMimeType.contains("jpeg")) ||
+            selectedFileName != null && (selectedFileName.toLowerCase().endsWith(".jpg") || selectedFileName.toLowerCase().endsWith(".jpeg")));
+        List<String> imageTargets = Arrays.asList("PNG", "WEBP", "HEIC", "BMP", "GIF");
+        boolean isSupportedImageConversion = isJpgFile && imageTargets.contains(selectedFormat.toUpperCase());
+        btnProceed.setEnabled(isSupportedImageConversion);
+        return;
+    }
+
+    // Default: disable
+    btnProceed.setEnabled(false);
     }
     
     private List<String> getFormatsForCategory(String category) {
@@ -656,4 +675,43 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
      * AsyncTask to perform the TXT to RTF conversion in the background
      */
 
+    /**
+     * AsyncTask for JPG image conversion
+     */
+    private class JpgImageConversionTask extends AsyncTask<Void, Void, Boolean> {
+        private Context context;
+        private Uri inputUri;
+        private String targetFormat;
+        private ProgressDialog progressDialog;
+        
+        public JpgImageConversionTask(Context context, Uri inputUri, String targetFormat) {
+            this.context = context;
+            this.inputUri = inputUri;
+            this.targetFormat = targetFormat;
+        }
+        
+        @Override
+        protected void onPreExecute() {
+            progressDialog = new ProgressDialog(context);
+            progressDialog.setMessage("Converting JPG to " + targetFormat + "...");
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+        }
+        
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            return ImageConverter.convertImage(context, inputUri, targetFormat);
+        }
+        
+        @Override
+        protected void onPostExecute(Boolean result) {
+            if (progressDialog.isShowing()) progressDialog.dismiss();
+            if (result) {
+                Toast.makeText(context, "Conversion successful! Saved to Documents/Konvert/Converted/Images/", Toast.LENGTH_LONG).show();
+                dismiss();
+            } else {
+                Toast.makeText(context, "Conversion failed. Please try again.", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
 }
