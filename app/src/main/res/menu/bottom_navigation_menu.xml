@@ -5,9 +5,9 @@
         android:icon="@android:drawable/ic_menu_compass"
         android:title="@string/dashboard" />
     <item
-        android:id="@+id/conversionFragment"
+        android:id="@+id/docsViewerEditorFragment"
         android:icon="@android:drawable/ic_menu_edit"
-        android:title="@string/conversion" />
+        android:title="Docs" />
     <item
         android:id="@+id/settingsFragment"
         android:icon="@android:drawable/ic_menu_preferences"

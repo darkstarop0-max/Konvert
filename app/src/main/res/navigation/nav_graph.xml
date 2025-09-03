@@ -16,10 +16,10 @@
     </fragment>
 
     <fragment
-        android:id="@+id/conversionFragment"
-        android:name="com.curosoft.konvert.ui.conversion.ConversionFragment"
-        android:label="@string/conversion"
-        tools:layout="@layout/fragment_conversion" />
+        android:id="@+id/docsViewerEditorFragment"
+        android:name="com.curosoft.konvert.ui.docs.DocsViewerEditorFragment"
+        android:label="Docs"
+        tools:layout="@layout/fragment_docs_viewer_editor" />
 
     <fragment
         android:id="@+id/settingsFragment"
@@ -31,11 +31,7 @@
         android:id="@+id/filePickerFragment"
         android:name="com.curosoft.konvert.ui.filepicker.FilePickerFragment"
         android:label="@string/file_picker"
-        tools:layout="@layout/fragment_file_picker">
-        <action
-            android:id="@+id/action_filePickerFragment_to_conversionFragment"
-            app:destination="@id/conversionFragment" />
-    </fragment>
+        tools:layout="@layout/fragment_file_picker" />
 
     <fragment
         android:id="@+id/onboardingFragment"

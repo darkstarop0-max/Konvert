@@ -54,9 +54,9 @@ public class MainActivity extends AppCompatActivity {
             bottomNavigationContainer = findViewById(R.id.bottom_navigation_container);
             
             // Define top-level destinations
-            AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                    R.id.dashboardFragment, R.id.conversionFragment, R.id.settingsFragment)
-                    .build();
+        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
+            R.id.dashboardFragment, R.id.docsViewerEditorFragment, R.id.settingsFragment)
+            .build();
                     
             // Connect the navController with the toolbar and BottomNavigationView
             NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
