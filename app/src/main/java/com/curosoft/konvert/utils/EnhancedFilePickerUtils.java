@@ -44,7 +44,7 @@ public class EnhancedFilePickerUtils {
     public static final class SupportedFileTypes {
         // Document formats
         public static final String[] DOCS = {
-            "docx", "pdf", "txt", "rtf", "odt", "epub", "mobi"
+            "docx", "pdf", "txt"
         };
         
         // Image formats
@@ -75,10 +75,6 @@ public class EnhancedFilePickerUtils {
             MIME_TYPES.put("docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
             MIME_TYPES.put("pdf", "application/pdf");
             MIME_TYPES.put("txt", "text/plain");
-            MIME_TYPES.put("rtf", "application/rtf");
-            MIME_TYPES.put("odt", "application/vnd.oasis.opendocument.text");
-            MIME_TYPES.put("epub", "application/epub+zip");
-            MIME_TYPES.put("mobi", "application/x-mobipocket-ebook");
             
             // Image MIME types
             MIME_TYPES.put("jpg", "image/jpeg");
