@@ -28,14 +28,37 @@ public class DocxToTxtConverter {
     private static final String TAG = "DocxToTxtConverter";
 
     /**
-     * Convert a DOCX file to TXT
+     * Convert a DOCX file to TXT for display purposes (simplified text extraction)
+     * 
+     * @param context Application context
+     * @param docxUri Uri of the DOCX file to extract text from
+     * @return Plain text content from the DOCX file
+     * @throws Exception If extraction fails
+     */
+    public static String convertDocxToTxt(Context context, Uri docxUri) throws Exception {
+        Log.d(TAG, "Starting DOCX text extraction for display");
+        
+        try (InputStream inputStream = context.getContentResolver().openInputStream(docxUri)) {
+            if (inputStream == null) {
+                throw new IOException("Cannot open input stream for DOCX file");
+            }
+            
+            return extractTextFromDocx(inputStream);
+        } catch (Exception e) {
+            Log.e(TAG, "Error extracting text from DOCX", e);
+            throw new Exception("Failed to extract text from DOCX: " + e.getMessage(), e);
+        }
+    }
+    
+    /**
+     * Convert a DOCX file to TXT and save to file
      * 
      * @param context Application context
      * @param docxUri Uri of the DOCX file to convert
      * @return Path to the generated TXT file
      * @throws Exception If conversion fails
      */
-    public static String convertDocxToTxt(Context context, Uri docxUri) throws Exception {
+    public static String convertDocxToTxtFile(Context context, Uri docxUri) throws Exception {
         Log.d(TAG, "Starting DOCX to TXT conversion");
         
         // Get the file name from the URI
@@ -287,5 +310,28 @@ public class DocxToTxtConverter {
             // Don't throw the exception, just log it
             // The conversion is still successful even if the file isn't added to MediaStore
         }
+    }
+    
+    /**
+     * Extract text content from DOCX file using InputStream (for display purposes)
+     * 
+     * @param inputStream InputStream of the DOCX file
+     * @return Extracted text content
+     * @throws IOException If extraction fails
+     */
+    private static String extractTextFromDocx(InputStream inputStream) throws IOException {
+        StringBuilder textContent = new StringBuilder();
+        
+        try (ZipInputStream zis = new ZipInputStream(inputStream)) {
+            ZipEntry entry;
+            while ((entry = zis.getNextEntry()) != null) {
+                if ("word/document.xml".equals(entry.getName())) {
+                    textContent.append(extractTextFromXML(zis));
+                    break;
+                }
+            }
+        }
+        
+        return textContent.toString().trim();
     }
 }

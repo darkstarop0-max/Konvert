@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    
+    <item
+        android:id="@+id/sort_name_asc"
+        android:title="Name A-Z"
+        android:checkable="true" />
+        
+    <item
+        android:id="@+id/sort_name_desc"
+        android:title="Name Z-A"
+        android:checkable="true" />
+        
+    <item
+        android:id="@+id/sort_size_asc"
+        android:title="Size (Small to Large)"
+        android:checkable="true" />
+        
+    <item
+        android:id="@+id/sort_size_desc"
+        android:title="Size (Large to Small)"
+        android:checkable="true" />
+        
+    <item
+        android:id="@+id/sort_date_asc"
+        android:title="Date (Oldest First)"
+        android:checkable="true" />
+        
+    <item
+        android:id="@+id/sort_date_desc"
+        android:title="Date (Newest First)"
+        android:checkable="true" />
+        
+</menu>
