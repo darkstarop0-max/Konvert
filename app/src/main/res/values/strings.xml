@@ -10,17 +10,13 @@
     <string name="skip">Skip</string>
     <string name="next">Next</string>
     <string name="get_started">Get Started</string>
-    <string name="onboarding_title_1">Welcome to Konvert</string>
-    <string name="onboarding_subtitle_1">Convert anything, anytime.</string>
-    <string name="onboarding_title_2">Fast &amp; Reliable</string>
-    <string name="onboarding_subtitle_2">Convert files with minimal wait time, maximum quality.</string>
-    <string name="onboarding_title_3">All Formats Supported</string>
-    <string name="onboarding_subtitle_3">Images, Documents, Audio, Video, Archives</string>
-    <string name="onboarding_title_4">Privacy Focused</string>
-    <string name="onboarding_subtitle_4">Your files stay safe on your device. No uploads required.</string>
+    <string name="onboarding_title_1">Transform Anything</string>
+    <string name="onboarding_subtitle_1">Convert files effortlessly with professional-grade quality and speed.</string>
+    <string name="onboarding_title_2">Lightning Fast</string>
+    <string name="onboarding_subtitle_2">Experience instant conversions with optimized performance and minimal wait times.</string>
+    <string name="onboarding_title_3">Privacy First</string>
+    <string name="onboarding_subtitle_3">Your files remain completely private. Everything happens locally on your device.</string>
     <string name="onboarding_image_description">Onboarding illustration</string>
-    <string name="onboarding_title_5">Ready to Go</string>
-    <string name="onboarding_subtitle_5">Start converting your files with just a few taps.</string>
     
     <!-- Bottom Sheet Strings -->
     <string name="select_file">Select File</string>
@@ -28,4 +24,10 @@
     <string name="cancel">Cancel</string>
     <string name="proceed">Proceed</string>
     <string name="convert_to">Convert To</string>
+    
+    <!-- Additional Onboarding strings if needed -->
+    <string name="onboarding_title_4">Ready to Launch</string>
+    <string name="onboarding_subtitle_4">Start converting your files with blazing speed and premium quality</string>
+    <string name="onboarding_title_5">Welcome Aboard</string>
+    <string name="onboarding_subtitle_5">Experience the future of file conversion today</string>
 </resources>

@@ -10,7 +10,9 @@
 
     <!-- UI Background Colors - Apple-inspired -->
     <color name="background">#F2F2F7</color>
+    <color name="background_light">#FAFAFA</color>
     <color name="surface">#FFFFFF</color>
+    <color name="surface_variant">#F8F8F8</color>
     <color name="card_background">#FFFFFF</color>
     <color name="divider">#E5E5EA</color>
     <color name="stroke_color">#E5E5EA</color>
@@ -41,8 +43,13 @@
     <!-- Other UI Elements - Apple-inspired -->
     <color name="error">#FF453A</color>
     <color name="success">#30D158</color>
+    <color name="success_light">#66D37E</color>
     <color name="warning">#FF9F0A</color>
     <color name="info">#5E5CE6</color>
+    
+    <!-- Ripple effects -->
+    <color name="ripple_primary">#330A84FF</color>
+    <color name="ripple_surface">#1A000000</color>
     
     <!-- Legacy colors - kept for backward compatibility -->
     <color name="black">#FF000000</color>

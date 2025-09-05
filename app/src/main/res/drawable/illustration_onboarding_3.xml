@@ -1,10 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="200dp"
-    android:height="200dp"
-    android:viewportWidth="24"
-    android:viewportHeight="24">
+    android:width="240dp"
+    android:height="240dp"
+    android:viewportWidth="240"
+    android:viewportHeight="240">
+    
+    <!-- Background circle -->
     <path
-        android:fillColor="@color/primary"
-        android:pathData="M21,3L3,3c-1.1,0 -2,0.9 -2,2v14c0,1.1 0.9,2 2,2h18c1.1,0 2,-0.9 2,-2L23,5c0,-1.1 -0.9,-2 -2,-2zM21,19L3,19L3,5h18v14zM9.5,15L11.5,15L11.5,9L9.5,9zM12.5,15h2L14.5,11h-2zM6.5,15h2L8.5,13h-2zM15.5,15h2L17.5,7h-2z" />
+        android:pathData="M120,20 A100,100 0 1,1 120,220 A100,100 0 1,1 120,20 Z"
+        android:fillColor="@color/primary_light"
+        android:fillAlpha="0.1" />
+    
+    <!-- Shield icon -->
+    <group android:translateX="120" android:translateY="120">
+        <!-- Shield background -->
+        <path
+            android:pathData="M0,-45 C-25,-40 -40,-25 -40,0 C-40,30 -20,45 0,50 C20,45 40,30 40,0 C40,-25 25,-40 0,-45 Z"
+            android:fillColor="@color/primary"
+            android:strokeColor="@color/primary_dark"
+            android:strokeWidth="2" />
+        
+        <!-- Shield highlight -->
+        <path
+            android:pathData="M0,-43 C-20,-38 -35,-25 -35,0 C-35,25 -18,38 0,43"
+            android:fillColor="@color/primary_light"
+            android:fillAlpha="0.3" />
+        
+        <!-- Lock icon inside shield -->
+        <group android:translateX="0" android:translateY="5">
+            <!-- Lock body -->
+            <path
+                android:pathData="M-12,0 L12,0 C14,0 15,1 15,3 L15,18 C15,20 14,21 12,21 L-12,21 C-14,21 -15,20 -15,18 L-15,3 C-15,1 -14,0 -12,0 Z"
+                android:fillColor="@android:color/white" />
+            
+            <!-- Lock shackle -->
+            <path
+                android:pathData="M-8,-15 C-8,-20 -4,-24 0,-24 C4,-24 8,-20 8,-15 L8,-5"
+                android:strokeColor="@android:color/white"
+                android:strokeWidth="3"
+                android:fillType="nonZero"
+                android:strokeLineCap="round" />
+            
+            <!-- Keyhole -->
+            <path
+                android:pathData="M0,5 A3,3 0 1,1 0,11 A3,3 0 1,1 0,5 Z"
+                android:fillColor="@color/primary" />
+            <path
+                android:pathData="M-1,11 L1,11 L1,16 L-1,16 Z"
+                android:fillColor="@color/primary" />
+        </group>
+    </group>
+    
+    <!-- Privacy dots -->
+    <group android:translateX="120" android:translateY="60">
+        <path android:pathData="M-20,-3 A3,3 0 1,1 -20,3 A3,3 0 1,1 -20,-3 Z" android:fillColor="@color/accent" android:fillAlpha="0.6" />
+        <path android:pathData="M0,-3 A3,3 0 1,1 0,3 A3,3 0 1,1 0,-3 Z" android:fillColor="@color/accent" android:fillAlpha="0.8" />
+        <path android:pathData="M20,-3 A3,3 0 1,1 20,3 A3,3 0 1,1 20,-3 Z" android:fillColor="@color/accent" />
+    </group>
+    
+    <!-- Checkmarks -->
+    <group android:translateX="80" android:translateY="180">
+        <path
+            android:pathData="M-3,0 L0,3 L6,-3"
+            android:strokeColor="@color/success"
+            android:strokeWidth="3"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+    </group>
+    
+    <group android:translateX="160" android:translateY="180">
+        <path
+            android:pathData="M-3,0 L0,3 L6,-3"
+            android:strokeColor="@color/success"
+            android:strokeWidth="3"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+    </group>
+    
 </vector>

@@ -1,10 +1,100 @@
 <?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="200dp"
-    android:height="200dp"
-    android:viewportWidth="24"
-    android:viewportHeight="24">
+    android:width="240dp"
+    android:height="240dp"
+    android:viewportWidth="240"
+    android:viewportHeight="240">
+    
+    <!-- Background circle -->
     <path
-        android:fillColor="@color/primary"
-        android:pathData="M12,1L3,5v6c0,5.55 3.84,10.74 9,12 5.16,-1.26 9,-6.45 9,-12V5l-9,-4zM12,11.99h7c-0.53,4.12 -3.28,7.79 -7,8.94V12H5V6.3l7,-3.11v8.8z" />
+        android:pathData="M120,20 A100,100 0 1,1 120,220 A100,100 0 1,1 120,20 Z"
+        android:fillColor="@color/success_light"
+        android:fillAlpha="0.1" />
+    
+    <!-- Rocket ship -->
+    <group android:translateX="120" android:translateY="120">
+        <!-- Rocket body -->
+        <path
+            android:pathData="M0,-50 C-8,-50 -15,-43 -15,-35 L-15,20 C-15,25 -10,30 0,35 C10,30 15,25 15,20 L15,-35 C15,-43 8,-50 0,-50 Z"
+            android:fillColor="@color/primary"
+            android:strokeColor="@color/primary_dark"
+            android:strokeWidth="2" />
+        
+        <!-- Rocket nose -->
+        <path
+            android:pathData="M0,-50 C-5,-60 5,-60 0,-50"
+            android:fillColor="@color/accent" />
+        
+        <!-- Rocket window -->
+        <path
+            android:pathData="M0,-28 A8,8 0 1,1 0,-12 A8,8 0 1,1 0,-28 Z"
+            android:fillColor="@color/background_light"
+            android:strokeColor="@color/primary_dark"
+            android:strokeWidth="2" />
+        
+        <!-- Window reflection -->
+        <path
+            android:pathData="M-5,-25 C-2,-22 2,-22 5,-25"
+            android:strokeColor="@color/accent_light"
+            android:strokeWidth="2"
+            android:strokeLineCap="round" />
+        
+        <!-- Rocket fins -->
+        <path
+            android:pathData="M-15,15 L-25,35 L-15,30 Z"
+            android:fillColor="@color/accent" />
+        <path
+            android:pathData="M15,15 L25,35 L15,30 Z"
+            android:fillColor="@color/accent" />
+        
+        <!-- Rocket flames -->
+        <group android:translateY="35">
+            <path
+                android:pathData="M-8,0 C-5,15 -2,20 0,25 C2,20 5,15 8,0"
+                android:fillColor="@color/warning"
+                android:fillAlpha="0.8" />
+            <path
+                android:pathData="M-5,5 C-3,12 -1,15 0,18 C1,15 3,12 5,5"
+                android:fillColor="@color/accent" />
+        </group>
+    </group>
+    
+    <!-- Stars -->
+    <group android:translateX="60" android:translateY="70">
+        <path
+            android:pathData="M0,-4 L1,0 L4,0 L2,2 L3,6 L0,4 L-3,6 L-2,2 L-4,0 L-1,0 Z"
+            android:fillColor="@color/accent"
+            android:fillAlpha="0.7" />
+    </group>
+    
+    <group android:translateX="180" android:translateY="90">
+        <path
+            android:pathData="M0,-3 L1,0 L3,0 L1,1 L2,4 L0,3 L-2,4 L-1,1 L-3,0 L-1,0 Z"
+            android:fillColor="@color/accent"
+            android:fillAlpha="0.6" />
+    </group>
+    
+    <group android:translateX="50" android:translateY="170">
+        <path
+            android:pathData="M0,-2 L1,0 L2,0 L1,1 L1,3 L0,2 L-1,3 L-1,1 L-2,0 L-1,0 Z"
+            android:fillColor="@color/accent"
+            android:fillAlpha="0.8" />
+    </group>
+    
+    <!-- Speed trails -->
+    <group android:translateX="60" android:translateY="140">
+        <path
+            android:pathData="M0,0 L-15,0"
+            android:strokeColor="@color/primary_light"
+            android:strokeWidth="2"
+            android:strokeLineCap="round"
+            android:strokeAlpha="0.6" />
+        <path
+            android:pathData="M0,8 L-10,8"
+            android:strokeColor="@color/primary_light"
+            android:strokeWidth="2"
+            android:strokeLineCap="round"
+            android:strokeAlpha="0.4" />
+    </group>
+    
 </vector>
