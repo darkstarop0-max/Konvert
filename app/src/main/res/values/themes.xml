@@ -47,4 +47,13 @@
         <item name="android:navigationBarColor">@color/background</item>
         <item name="android:windowFullscreen">false</item>
     </style>
+
+    <!-- Toolbar title text appearance -->
+    <style name="ToolbarTitleTextAppearance" parent="TextAppearance.AppCompat.Widget.ActionBar.Title">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/clean_text_primary</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
+
 </resources>

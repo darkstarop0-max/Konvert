@@ -5,21 +5,31 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background"
+    android:background="@color/clean_background"
     tools:context=".MainActivity">
     
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="0dp"
         android:layout_height="?attr/actionBarSize"
-        android:background="@color/primary"
-        android:elevation="4dp"
-        app:title="@string/app_name"
-        app:titleTextColor="@color/text_on_primary"
+        android:background="@color/clean_background"
+        android:elevation="0dp"
+        app:title="Konvert"
+        app:titleTextColor="@color/clean_text_primary"
+        app:titleTextAppearance="@style/ToolbarTitleTextAppearance"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        style="@style/Widget.Konvert.Toolbar" />
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Subtle divider under toolbar -->
+    <View
+        android:id="@+id/toolbar_divider"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:background="@color/clean_divider"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/nav_host_fragment"
@@ -30,7 +40,7 @@
         app:layout_constraintBottom_toTopOf="@+id/bottom_navigation_container"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbar"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar_divider"
         app:navGraph="@navigation/nav_graph" />
 
     <androidx.cardview.widget.CardView

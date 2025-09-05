@@ -15,6 +15,16 @@
     <color name="divider">#38383A</color>
     <color name="stroke_color">#38383A</color>
     
+    <!-- Glassmorphism/Neumorphism colors - Dark mode -->
+    <color name="glass_background">#40000000</color>
+    <color name="glass_background_dark">#60000000</color>
+    <color name="glass_border">#60FFFFFF</color>
+    <color name="glass_border_dark">#40FFFFFF</color>
+    <color name="neo_light">#2C2C2E</color>
+    <color name="neo_dark">#1C1C1E</color>
+    <color name="neo_shadow_light">#48484A</color>
+    <color name="neo_shadow_dark">#0D0D0D</color>
+    
     <!-- Text Colors - Apple-inspired Dark -->
     <color name="text_primary">#F2F2F7</color>
     <color name="text_secondary">#D1D1D6</color>
@@ -43,4 +53,13 @@
     <color name="success">#30D158</color>
     <color name="warning">#FF9F0A</color>
     <color name="info">#5E5CE6</color>
+    
+    <!-- Clean Apple-inspired colors - Dark mode -->
+    <color name="clean_background">#000000</color>
+    <color name="clean_surface">#1C1C1E</color>
+    <color name="clean_accent">#007AFF</color>
+    <color name="clean_text_primary">#FFFFFF</color>
+    <color name="clean_text_secondary">#EBEBF5</color>
+    <color name="clean_text_tertiary">#8E8E93</color>
+    <color name="clean_divider">#38383A</color>
 </resources>

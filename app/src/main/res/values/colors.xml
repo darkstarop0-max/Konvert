@@ -16,6 +16,8 @@
     <color name="card_background">#FFFFFF</color>
     <color name="divider">#E5E5EA</color>
     <color name="stroke_color">#E5E5EA</color>
+    <color name="quick_action_icon_bg">#F0F0F5</color>
+    <color name="recent_file_icon_bg">#F5F5F7</color>
     
     <!-- Text Colors - Apple-inspired -->
     <color name="text_primary">#1C1C1E</color>
@@ -47,6 +49,32 @@
     <color name="warning">#FF9F0A</color>
     <color name="info">#5E5CE6</color>
     
+    <!-- Glassmorphism/Neumorphism colors -->
+    <color name="glass_background">#40FFFFFF</color>
+    <color name="glass_background_dark">#20000000</color>
+    <color name="glass_border">#60FFFFFF</color>
+    <color name="glass_border_dark">#40FFFFFF</color>
+    <color name="neo_light">#FFFFFF</color>
+    <color name="neo_dark">#E0E5EC</color>
+    <color name="neo_shadow_light">#A3B1C6</color>
+    <color name="neo_shadow_dark">#FFFFFF</color>
+    
+    <!-- Premium gradient colors -->
+    <color name="gradient_start">#667eea</color>
+    <color name="gradient_end">#764ba2</color>
+    <color name="gradient_text_start">#ff6b6b</color>
+    <color name="gradient_text_end">#4ecdc4</color>
+    <color name="gradient_images_start">#a8edea</color>
+    <color name="gradient_images_end">#fed6e3</color>
+    <color name="gradient_audio_start">#ffecd2</color>
+    <color name="gradient_audio_end">#fcb69f</color>
+    <color name="gradient_video_start">#667eea</color>
+    <color name="gradient_video_end">#764ba2</color>
+    <color name="gradient_compression_start">#ff9a9e</color>
+    <color name="gradient_compression_end">#fecfef</color>
+    <color name="gradient_more_start">#a8edea</color>
+    <color name="gradient_more_end">#fed6e3</color>
+    
     <!-- Ripple effects -->
     <color name="ripple_primary">#330A84FF</color>
     <color name="ripple_surface">#1A000000</color>
@@ -54,4 +82,14 @@
     <!-- Legacy colors - kept for backward compatibility -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    
+    <!-- Clean Apple-inspired colors -->
+    <color name="clean_background">#F9F9F9</color>
+    <color name="clean_background_white">#FFFFFF</color>
+    <color name="clean_surface">#FFFFFF</color>
+    <color name="clean_accent">#007AFF</color>
+    <color name="clean_text_primary">#000000</color>
+    <color name="clean_text_secondary">#6D6D70</color>
+    <color name="clean_text_tertiary">#C7C7CC</color>
+    <color name="clean_divider">#E5E5EA</color>
 </resources>
