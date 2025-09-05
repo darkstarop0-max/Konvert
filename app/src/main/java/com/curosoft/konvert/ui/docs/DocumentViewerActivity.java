@@ -86,6 +86,25 @@ public class DocumentViewerActivity extends AppCompatActivity {
         fileUri = getIntent().getData();
         fileName = getIntent().getStringExtra("fileName");
         
+        // Fallback: try to get file path from extras and convert to URI
+        if (fileUri == null) {
+            String filePath = getIntent().getStringExtra("file_path");
+            if (filePath != null) {
+                try {
+                    File file = new File(filePath);
+                    fileUri = FileProvider.getUriForFile(
+                        this,
+                        getPackageName() + ".provider",
+                        file
+                    );
+                } catch (Exception e) {
+                    // If FileProvider fails, use regular file URI
+                    File file = new File(filePath);
+                    fileUri = Uri.fromFile(file);
+                }
+            }
+        }
+        
         if (fileUri == null) {
             showError("Unable to open document: missing file URI");
             return;

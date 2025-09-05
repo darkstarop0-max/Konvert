@@ -31,6 +31,18 @@ public class RecentFileAdapter extends RecyclerView.Adapter<RecentFileAdapter.Vi
         this.listener = listener;
     }
 
+    public void updateFiles(List<RecentFile> newFiles) {
+        this.recentFiles.clear();
+        this.recentFiles.addAll(newFiles);
+        notifyDataSetChanged();
+    }
+
+    public void submitList(List<RecentFile> newFiles) {
+        this.recentFiles.clear();
+        this.recentFiles.addAll(newFiles);
+        notifyDataSetChanged();
+    }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {

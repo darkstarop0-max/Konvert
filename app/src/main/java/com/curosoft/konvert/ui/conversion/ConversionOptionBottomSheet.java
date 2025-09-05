@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.curosoft.konvert.R;
+import com.curosoft.konvert.utils.ConversionUtils;
 import com.curosoft.konvert.utils.DocxToPdfConverter;
 import com.curosoft.konvert.utils.DocxToTxtConverter;
 import com.curosoft.konvert.utils.EnhancedFilePickerUtils;
@@ -410,6 +411,9 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
             }
             
             if (outputPath != null) {
+                // Track the successful conversion
+                ConversionUtils.trackConversion(context, outputPath, "PDF", "DOCX");
+                
                 Toast.makeText(context, 
                         "Conversion successful! File saved to:\n" + outputPath, 
                         Toast.LENGTH_LONG).show();
@@ -460,6 +464,9 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
             }
             
             if (outputPath != null) {
+                // Track the successful conversion
+                ConversionUtils.trackConversion(context, outputPath, "DOCX", "PDF");
+                
                 Toast.makeText(context, 
                         "Conversion successful! File saved to:\n" + outputPath, 
                         Toast.LENGTH_LONG).show();
@@ -510,6 +517,9 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
             }
             
             if (outputPath != null) {
+                // Track the successful conversion
+                ConversionUtils.trackConversion(context, outputPath, "DOCX", "TXT");
+                
                 Toast.makeText(context, 
                         "Conversion successful! File saved to:\n" + outputPath, 
                         Toast.LENGTH_LONG).show();
@@ -562,6 +572,9 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
             }
             
             if (outputPath != null) {
+                // Track the successful conversion
+                ConversionUtils.trackConversion(context, outputPath, "PDF", "TXT");
+                
                 Toast.makeText(context, 
                         "Conversion successful! File saved to:\n" + outputPath, 
                         Toast.LENGTH_LONG).show();
@@ -614,6 +627,9 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
             }
             
             if (outputPath != null) {
+                // Track the successful conversion
+                ConversionUtils.trackConversion(context, outputPath, "TXT", "DOCX");
+                
                 Toast.makeText(context, 
                         "Conversion successful! File saved to:\n" + outputPath, 
                         Toast.LENGTH_LONG).show();
@@ -664,6 +680,9 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
             }
             
             if (outputPath != null) {
+                // Track the successful conversion
+                ConversionUtils.trackConversion(context, outputPath, "TXT", "PDF");
+                
                 Toast.makeText(context, 
                         "Conversion successful! File saved to:\n" + outputPath, 
                         Toast.LENGTH_LONG).show();
@@ -712,6 +731,11 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
         protected void onPostExecute(Boolean result) {
             if (progressDialog.isShowing()) progressDialog.dismiss();
             if (result) {
+                // Track the successful conversion (using generic path since ImageConverter doesn't return specific path)
+                String fileName = "converted_image." + targetFormat.toLowerCase();
+                String outputPath = "/storage/emulated/0/Documents/Konvert/Converted/" + fileName;
+                ConversionUtils.trackConversion(context, outputPath, "JPG", targetFormat.toUpperCase());
+                
                 Toast.makeText(context, "Conversion successful! Saved to Documents/Konvert/Converted/Images/", Toast.LENGTH_LONG).show();
                 dismiss();
             } else {
@@ -753,6 +777,11 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
             if (progressDialog.isShowing()) progressDialog.dismiss();
             // Success/failure toast is handled in ImageConverter
             if (result) {
+                // Track the successful conversion (using generic path since ImageConverter doesn't return specific path)
+                String fileName = "converted_image." + targetFormat.toLowerCase();
+                String outputPath = "/storage/emulated/0/Documents/Konvert/Converted/" + fileName;
+                ConversionUtils.trackConversion(context, outputPath, "PNG", targetFormat.toUpperCase());
+                
                 Toast.makeText(context, "Conversion successful! Saved to Documents/Konvert/Converted/", Toast.LENGTH_LONG).show();
                 dismiss();
             }
@@ -791,6 +820,9 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
         protected void onPostExecute(String outputPath) {
             if (progressDialog.isShowing()) progressDialog.dismiss();
             if (outputPath != null) {
+                // Track the successful conversion
+                ConversionUtils.trackConversion(context, outputPath, "WEBP", targetFormat.toUpperCase());
+                
                 Toast.makeText(context, "Conversion successful! Saved to Documents/Konvert/Converted/", Toast.LENGTH_LONG).show();
                 dismiss();
             }

@@ -1,15 +1,19 @@
 package com.curosoft.konvert.ui.dashboard;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import androidx.cardview.widget.CardView;
+import androidx.core.content.FileProvider;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -17,14 +21,17 @@ import com.curosoft.konvert.R;
 import com.curosoft.konvert.ui.conversion.ConversionOptionBottomSheet;
 import com.curosoft.konvert.ui.dashboard.adapters.RecentFileAdapter;
 import com.curosoft.konvert.ui.dashboard.models.RecentFile;
+import com.curosoft.konvert.ui.docs.DocumentViewerActivity;
 
+import java.io.File;
 import java.util.ArrayList;
-import java.util.List;
 
 public class DashboardFragment extends Fragment {
 
     private RecyclerView recentFilesRecyclerView;
     private LinearLayout emptyStateLayout;
+    private RecentFileAdapter recentFileAdapter;
+    private DashboardViewModel viewModel;
     
     // Premium conversion buttons
     private CardView btnDocuments, btnImages, btnAudio, btnVideo, btnFiles, btnMore;
@@ -38,6 +45,9 @@ public class DashboardFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        
+        // Initialize ViewModel
+        viewModel = new ViewModelProvider(this).get(DashboardViewModel.class);
         
         // Initialize views
         recentFilesRecyclerView = view.findViewById(R.id.recent_files_recycler);
@@ -56,6 +66,9 @@ public class DashboardFragment extends Fragment {
         
         // Set up the Recent Files RecyclerView
         setupRecentFiles();
+        
+        // Observe recent files LiveData
+        observeRecentFiles();
     }
     
     private void setupConversionButtons() {
@@ -73,39 +86,64 @@ public class DashboardFragment extends Fragment {
     }
     
     private void setupRecentFiles() {
-        // Get the list of recent files
-        List<RecentFile> recentFiles = getRecentFiles();
-        
-        // Set layout manager and adapter
+        // Set layout manager
         recentFilesRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        RecentFileAdapter adapter = new RecentFileAdapter(recentFiles);
+        
+        // Initialize adapter with empty list
+        recentFileAdapter = new RecentFileAdapter(new ArrayList<>());
+        recentFilesRecyclerView.setAdapter(recentFileAdapter);
         
         // Set click listener for recent files
-        adapter.setOnRecentFileClickListener(recentFile -> {
-            // Handle recent file click - could open file or show options
-            // For now, just a placeholder
+        recentFileAdapter.setOnRecentFileClickListener(this::openRecentFile);
+    }
+    
+    private void observeRecentFiles() {
+        viewModel.getRecentFiles().observe(getViewLifecycleOwner(), recentFiles -> {
+            // Update adapter
+            recentFileAdapter.submitList(recentFiles);
+            
+            // Show/hide empty state
+            if (recentFiles == null || recentFiles.isEmpty()) {
+                recentFilesRecyclerView.setVisibility(View.GONE);
+                emptyStateLayout.setVisibility(View.VISIBLE);
+            } else {
+                recentFilesRecyclerView.setVisibility(View.VISIBLE);
+                emptyStateLayout.setVisibility(View.GONE);
+            }
         });
-        
-        recentFilesRecyclerView.setAdapter(adapter);
-        
-        // Show empty state if no recent files
-        if (recentFiles.isEmpty()) {
-            recentFilesRecyclerView.setVisibility(View.GONE);
-            emptyStateLayout.setVisibility(View.VISIBLE);
-        } else {
-            recentFilesRecyclerView.setVisibility(View.VISIBLE);
-            emptyStateLayout.setVisibility(View.GONE);
+    }
+    
+    private void openRecentFile(RecentFile recentFile) {
+        // Open the file in DocumentViewerActivity
+        if (recentFile.getFilePath() != null) {
+            Intent intent = new Intent(getContext(), DocumentViewerActivity.class);
+            try {
+                // Convert file path to URI using FileProvider
+                File file = new File(recentFile.getFilePath());
+                Uri fileUri = FileProvider.getUriForFile(
+                    getContext(),
+                    getContext().getPackageName() + ".provider",
+                    file
+                );
+                intent.setData(fileUri);
+                intent.putExtra("fileName", recentFile.getFileName());
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                startActivity(intent);
+            } catch (Exception e) {
+                // Fallback to regular file URI if FileProvider fails
+                File file = new File(recentFile.getFilePath());
+                Uri fileUri = Uri.fromFile(file);
+                intent.setData(fileUri);
+                intent.putExtra("fileName", recentFile.getFileName());
+                startActivity(intent);
+            }
         }
     }
     
-    private List<RecentFile> getRecentFiles() {
-        List<RecentFile> files = new ArrayList<>();
-        
-        // Add some dummy recent files for demonstration
-        files.add(new RecentFile(R.drawable.ic_description, "vacation.jpg", "JPG → PNG", "2 minutes ago"));
-        files.add(new RecentFile(R.drawable.ic_description, "document.docx", "DOCX → PDF", "Yesterday"));
-        files.add(new RecentFile(R.drawable.ic_description, "presentation.pptx", "PPTX → PDF", "Aug 28, 2025"));
-        
-        return files;
+    // Public method to add a converted file (call from conversion activities)
+    public void addConvertedFile(String fileName, String filePath, String fromFormat, String toFormat) {
+        if (viewModel != null) {
+            viewModel.addConvertedFile(fileName, filePath, fromFormat, toFormat);
+        }
     }
 }
