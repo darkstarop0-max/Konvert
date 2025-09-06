@@ -1,277 +1,264 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?android:attr/windowBackground">
+    android:background="#FAFAFA"
+    android:fitsSystemWindows="true">
 
-    <!-- App Bar Layout -->
-    <LinearLayout
+    <!-- Minimal App Bar -->
+    <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:background="?attr/colorPrimary"
-        android:elevation="4dp">
+        android:background="@android:color/transparent"
+        android:elevation="0dp"
+        app:elevation="0dp">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-            app:title="Document Viewer" />
+            android:background="@android:color/transparent"
+            app:navigationIcon="@drawable/ic_arrow_back_24"
+            app:title=""
+            app:titleTextColor="@color/primary_text_color" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- Main Content Container -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/contentScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <!-- Text Document Display -->
+            <LinearLayout
+                android:id="@+id/textContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/documentTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="24dp"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="24dp"
+                    android:fontFamily="@font/sf_pro_display_semibold"
+                    android:text="Document Title"
+                    android:textColor="@color/primary_text_color"
+                    android:textSize="28sp"
+                    android:lineSpacingExtra="2dp" />
+
+                <TextView
+                    android:id="@+id/documentContent"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="24dp"
+                    android:layout_marginBottom="80dp"
+                    android:fontFamily="@font/sf_pro_text_regular"
+                    android:lineHeight="24dp"
+                    android:text="Document content will appear here"
+                    android:textColor="@color/secondary_text_color"
+                    android:textIsSelectable="true"
+                    android:textSize="16sp" />
+
+            </LinearLayout>
+
+            <!-- PDF Document Display -->
+            <FrameLayout
+                android:id="@+id/pdfContainer"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone">
+
+                <!-- PDF Pages RecyclerView -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/pdfPagesRecyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginBottom="80dp"
+                    android:clipToPadding="false"
+                    android:paddingVertical="16dp" />
+
+            </FrameLayout>
+
+            <!-- DOCX Document Display -->
+            <WebView
+                android:id="@+id/docxWebView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="80dp"
+                android:visibility="gone" />
+
+        </FrameLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Floating Action Controls -->
+    <LinearLayout
+        android:id="@+id/floatingControls"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="24dp"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <!-- Share Button -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabShare"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_share_24"
+            android:contentDescription="Share document"
+            app:backgroundTint="@color/floating_button_background"
+            app:tint="@color/floating_button_icon"
+            app:elevation="8dp"
+            app:fabSize="normal" />
 
     </LinearLayout>
 
-    <!-- Main Content -->
-    <ScrollView
-        android:id="@+id/nestedScrollView"
+    <!-- Bottom Sheet for Controls -->
+    <LinearLayout
+        android:id="@+id/controlsBottomSheet"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/appBarLayout"
-        android:layout_above="@id/pdfNavigationBar"
-        android:fillViewport="true">
+        android:layout_height="wrap_content"
+        android:background="@drawable/bottom_sheet_background"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:visibility="gone"
+        app:behavior_hideable="true"
+        app:behavior_peekHeight="0dp"
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
+        <!-- Handle Bar -->
+        <View
+            android:layout_width="40dp"
+            android:layout_height="4dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/bottom_sheet_handle" />
+
+        <!-- Text Size Controls -->
         <LinearLayout
+            android:id="@+id/textSizeControls"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="gone">
 
-            <!-- Text Content Display -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/textContentCard"
-                android:layout_width="match_parent"
+            <TextView
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:visibility="gone"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="4dp">
+                android:layout_weight="1"
+                android:fontFamily="@font/sf_pro_text_medium"
+                android:text="Text Size"
+                android:textColor="@color/primary_text_color"
+                android:textSize="17sp" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <!-- Text Controls -->
-                    <LinearLayout
-                        android:id="@+id/textControls"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginBottom="16dp">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Text Size"
-                            android:textStyle="bold" />
-
-                        <androidx.appcompat.widget.AppCompatButton
-                            android:id="@+id/btnTextSizeDecrease"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:layout_marginEnd="8dp"
-                            android:text="A-"
-                            android:textSize="12sp"
-                            android:background="@drawable/button_outline_background"
-                            android:textColor="?attr/colorPrimary" />
-
-                        <TextView
-                            android:id="@+id/textSizeIndicator"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginHorizontal="12dp"
-                            android:text="14sp"
-                            android:textStyle="bold" />
-
-                        <androidx.appcompat.widget.AppCompatButton
-                            android:id="@+id/btnTextSizeIncrease"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:layout_marginStart="8dp"
-                            android:text="A+"
-                            android:textSize="12sp"
-                            android:background="@drawable/button_outline_background"
-                            android:textColor="?attr/colorPrimary" />
-
-                    </LinearLayout>
-
-                    <!-- Document Content Text -->
-                    <TextView
-                        android:id="@+id/documentContent"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:lineSpacingExtra="4dp"
-                        android:text="Document content will appear here"
-                        android:textIsSelectable="true"
-                        android:textSize="14sp" />
-
-                </LinearLayout>
-
-            </androidx.cardview.widget.CardView>
-
-            <!-- PDF Content Display -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/pdfContentCard"
-                android:layout_width="match_parent"
+            <SeekBar
+                android:id="@+id/textSizeSlider"
+                android:layout_width="200dp"
                 android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:visibility="gone"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="4dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <!-- PDF Controls -->
-                    <LinearLayout
-                        android:id="@+id/pdfControls"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:padding="16dp"
-                        android:background="@android:color/transparent">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Zoom"
-                            android:textStyle="bold" />
-
-                        <androidx.appcompat.widget.AppCompatButton
-                            android:id="@+id/btnPdfZoomOut"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:layout_marginEnd="8dp"
-                            android:text="−"
-                            android:textSize="18sp"
-                            android:background="@drawable/button_outline_background"
-                            android:textColor="?attr/colorPrimary" />
-
-                        <TextView
-                            android:id="@+id/pdfZoomIndicator"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginHorizontal="12dp"
-                            android:text="100%"
-                            android:textStyle="bold" />
-
-                        <androidx.appcompat.widget.AppCompatButton
-                            android:id="@+id/btnPdfZoomIn"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:layout_marginStart="8dp"
-                            android:text="+"
-                            android:textSize="18sp"
-                            android:background="@drawable/button_outline_background"
-                            android:textColor="?attr/colorPrimary" />
-
-                    </LinearLayout>
-
-                    <!-- PDF Display Container -->
-                    <HorizontalScrollView
-                        android:id="@+id/pdfHorizontalScroll"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="@android:color/white">
-
-                        <ScrollView
-                            android:id="@+id/pdfVerticalScroll"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content">
-
-                            <ImageView
-                                android:id="@+id/pdfImageView"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:adjustViewBounds="true"
-                                android:padding="16dp"
-                                android:scaleType="matrix" />
-
-                        </ScrollView>
-
-                    </HorizontalScrollView>
-
-                </LinearLayout>
-
-            </androidx.cardview.widget.CardView>
+                android:max="12"
+                android:progress="4"
+                android:progressTint="@color/accent_color"
+                android:thumbTint="@color/accent_color"
+                android:progressBackgroundTint="@color/secondary_text_color" />
 
         </LinearLayout>
 
-    </ScrollView>
-
-    <!-- PDF Navigation Bottom Bar -->
-    <LinearLayout
-        android:id="@+id/pdfNavigationBar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:background="?attr/colorPrimary"
-        android:elevation="8dp"
-        android:orientation="horizontal"
-        android:padding="12dp"
-        android:visibility="gone">
-
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btnPrevPage"
-            android:layout_width="wrap_content"
+        <!-- PDF Zoom Controls -->
+        <LinearLayout
+            android:id="@+id/pdfZoomControls"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="← Previous"
-            android:textColor="@android:color/white"
-            android:background="@android:color/transparent"
-            android:textAllCaps="false" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="gone">
 
-        <View
-            android:layout_width="0dp"
-            android:layout_height="1dp"
-            android:layout_weight="1" />
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFamily="@font/sf_pro_text_medium"
+                android:text="Zoom"
+                android:textColor="@color/primary_text_color"
+                android:textSize="17sp" />
 
-        <TextView
-            android:id="@+id/pageIndicator"
-            android:layout_width="wrap_content"
+            <SeekBar
+                android:id="@+id/pdfZoomSlider"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:max="25"
+                android:progress="15"
+                android:progressTint="@color/accent_color"
+                android:thumbTint="@color/accent_color"
+                android:progressBackgroundTint="@color/secondary_text_color" />
+
+        </LinearLayout>
+
+        <!-- Page Navigation for PDF -->
+        <LinearLayout
+            android:id="@+id/pageNavigationControls"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:text="1 of 10"
-            android:textColor="@android:color/white"
-            android:textStyle="bold" />
+            android:layout_marginTop="16dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="gone">
 
-        <View
-            android:layout_width="0dp"
-            android:layout_height="1dp"
-            android:layout_weight="1" />
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFamily="@font/sf_pro_text_medium"
+                android:text="Page"
+                android:textColor="@color/primary_text_color"
+                android:textSize="17sp" />
 
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btnNextPage"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Next →"
-            android:textColor="@android:color/white"
-            android:background="@android:color/transparent"
-            android:textAllCaps="false" />
+            <TextView
+                android:id="@+id/pageIndicator"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:fontFamily="@font/sf_pro_text_regular"
+                android:text="1 of 10"
+                android:textColor="@color/secondary_text_color"
+                android:textSize="15sp" />
+
+            <ImageButton
+                android:id="@+id/btnPrevPage"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/circle_button_background"
+                android:contentDescription="Previous page"
+                android:src="@drawable/ic_arrow_back_24"
+                android:tint="@color/button_icon_color" />
+
+            <ImageButton
+                android:id="@+id/btnNextPage"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/circle_button_background"
+                android:contentDescription="Next page"
+                android:src="@drawable/ic_arrow_forward_24"
+                android:tint="@color/button_icon_color" />
+
+        </LinearLayout>
 
     </LinearLayout>
 
-    <!-- Dark Mode Toggle Button -->
-    <ImageButton
-        android:id="@+id/fabDarkMode"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:layout_margin="16dp"
-        android:layout_marginBottom="80dp"
-        android:background="@drawable/fab_background"
-        android:src="@android:drawable/ic_dialog_info"
-        android:contentDescription="Toggle Dark Mode"
-        android:elevation="6dp" />
-
-</RelativeLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

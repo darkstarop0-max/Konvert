@@ -532,6 +532,117 @@ public class EnhancedDocumentConverter {
         return new File(outputDir, outputFileName).getAbsolutePath();
     }
     
+    /**
+     * Convert DOCX to HTML for web display
+     */
+    public String convertDocxToHtml(String inputPath) {
+        try {
+            File inputFile = new File(inputPath);
+            if (!inputFile.exists()) {
+                throw new IOException("Input file does not exist: " + inputPath);
+            }
+
+            XWPFDocument document = new XWPFDocument(new FileInputStream(inputFile));
+            StringBuilder htmlBuilder = new StringBuilder();
+            
+            // Start HTML
+            htmlBuilder.append("<!DOCTYPE html><html><head>");
+            htmlBuilder.append("<meta charset='UTF-8'>");
+            htmlBuilder.append("<meta name='viewport' content='width=device-width, initial-scale=1.0'>");
+            htmlBuilder.append("<style>");
+            htmlBuilder.append("body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; ");
+            htmlBuilder.append("line-height: 1.6; margin: 20px; color: #333; }");
+            htmlBuilder.append("p { margin: 12px 0; }");
+            htmlBuilder.append("h1, h2, h3, h4, h5, h6 { margin: 20px 0 10px 0; font-weight: 600; }");
+            htmlBuilder.append("table { border-collapse: collapse; width: 100%; margin: 16px 0; }");
+            htmlBuilder.append("td, th { border: 1px solid #ddd; padding: 8px; text-align: left; }");
+            htmlBuilder.append("th { background-color: #f5f5f5; font-weight: 600; }");
+            htmlBuilder.append(".bold { font-weight: bold; }");
+            htmlBuilder.append(".italic { font-style: italic; }");
+            htmlBuilder.append(".underline { text-decoration: underline; }");
+            htmlBuilder.append("</style>");
+            htmlBuilder.append("</head><body>");
+
+            // Process paragraphs
+            List<XWPFParagraph> paragraphs = document.getParagraphs();
+            for (XWPFParagraph paragraph : paragraphs) {
+                String text = paragraph.getText().trim();
+                if (!text.isEmpty()) {
+                    htmlBuilder.append("<p>");
+                    
+                    // Process runs for formatting
+                    List<XWPFRun> runs = paragraph.getRuns();
+                    for (XWPFRun run : runs) {
+                        String runText = run.getText(0);
+                        if (runText != null && !runText.isEmpty()) {
+                            boolean isBold = run.isBold();
+                            boolean isItalic = run.isItalic();
+                            
+                            if (isBold) htmlBuilder.append("<strong>");
+                            if (isItalic) htmlBuilder.append("<em>");
+                            
+                            htmlBuilder.append(escapeHtml(runText));
+                            
+                            if (isItalic) htmlBuilder.append("</em>");
+                            if (isBold) htmlBuilder.append("</strong>");
+                        }
+                    }
+                    
+                    htmlBuilder.append("</p>");
+                }
+            }
+
+            // Process tables
+            List<XWPFTable> tables = document.getTables();
+            for (XWPFTable table : tables) {
+                htmlBuilder.append("<table>");
+                
+                List<XWPFTableRow> rows = table.getRows();
+                boolean isFirstRow = true;
+                
+                for (XWPFTableRow row : rows) {
+                    htmlBuilder.append("<tr>");
+                    List<XWPFTableCell> cells = row.getTableCells();
+                    
+                    for (XWPFTableCell cell : cells) {
+                        String cellTag = isFirstRow ? "th" : "td";
+                        htmlBuilder.append("<").append(cellTag).append(">");
+                        
+                        String cellText = cell.getText().trim();
+                        if (!cellText.isEmpty()) {
+                            htmlBuilder.append(escapeHtml(cellText));
+                        }
+                        
+                        htmlBuilder.append("</").append(cellTag).append(">");
+                    }
+                    htmlBuilder.append("</tr>");
+                    isFirstRow = false;
+                }
+                
+                htmlBuilder.append("</table>");
+            }
+
+            // End HTML
+            htmlBuilder.append("</body></html>");
+            
+            document.close();
+            return htmlBuilder.toString();
+            
+        } catch (Exception e) {
+            Log.e("EnhancedDocumentConverter", "Error converting DOCX to HTML", e);
+            return "<html><body><h3>Error loading document</h3><p>" + e.getMessage() + "</p></body></html>";
+        }
+    }
+    
+    private String escapeHtml(String text) {
+        return text.replace("&", "&amp;")
+                  .replace("<", "&lt;")
+                  .replace(">", "&gt;")
+                  .replace("\"", "&quot;")
+                  .replace("'", "&#39;")
+                  .replace("\n", "<br>");
+    }
+    
     private static String getFileName(Context context, Uri uri) {
         try {
             String fileName = UriUtils.getFileName(context, uri);

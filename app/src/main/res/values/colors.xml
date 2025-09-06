@@ -19,6 +19,16 @@
     <color name="quick_action_icon_bg">#F0F0F5</color>
     <color name="recent_file_icon_bg">#F5F5F7</color>
     
+    <!-- Document Viewer Colors -->
+    <color name="surface_color">#FFFFFF</color>
+    <color name="handle_color">#C7C7CC</color>
+    <color name="circle_button_background">#F2F2F7</color>
+    <color name="button_icon_color">#3C3C43</color>
+    <color name="floating_button_background">#FFFFFF</color>
+    <color name="floating_button_icon">#007AFF</color>
+    <color name="slider_inactive">#E5E5EA</color>
+    <color name="accent_color">#007AFF</color>
+    
     <!-- Text Colors - Apple-inspired -->
     <color name="text_primary">#1C1C1E</color>
     <color name="text_secondary">#8E8E93</color>
@@ -27,6 +37,10 @@
     <color name="text_on_primary">#FFFFFF</color>
     <color name="text_on_accent">#FFFFFF</color>
     <color name="text_on_background">#1C1C1E</color>
+    
+    <!-- Aliases for backward compatibility -->
+    <color name="primary_text_color">@color/text_primary</color>
+    <color name="secondary_text_color">@color/text_secondary</color>
     
     <!-- Status and Navigation Bar - Apple-inspired -->
     <color name="status_bar">#F2F2F7</color>

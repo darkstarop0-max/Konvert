@@ -1,6 +1,7 @@
 package com.curosoft.konvert.ui.docs;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -196,10 +197,32 @@ public class DocsViewerEditorFragment extends Fragment implements
     }
     
     private void openDocument(File document) {
-        Intent intent = new Intent(requireContext(), DocumentViewerActivity.class);
-        intent.putExtra("document_path", document.getAbsolutePath());
-        intent.putExtra("document_name", document.getName());
-        startActivity(intent);
+        try {
+            Intent intent = new Intent(requireContext(), DocumentViewerActivity.class);
+            
+            // Create a content URI using FileProvider
+            Uri documentUri = androidx.core.content.FileProvider.getUriForFile(
+                requireContext(),
+                requireContext().getPackageName() + ".provider",
+                document
+            );
+            
+            // Set the URI as data and add extras as fallback
+            intent.setData(documentUri);
+            intent.putExtra("file_path", document.getAbsolutePath());
+            intent.putExtra("fileName", document.getName());
+            
+            // Grant read permission for the URI
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            
+            startActivity(intent);
+        } catch (Exception e) {
+            // Fallback: use file path only
+            Intent intent = new Intent(requireContext(), DocumentViewerActivity.class);
+            intent.putExtra("file_path", document.getAbsolutePath());
+            intent.putExtra("fileName", document.getName());
+            startActivity(intent);
+        }
     }
     
     @Override

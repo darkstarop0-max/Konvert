@@ -1,76 +1,77 @@
 package com.curosoft.konvert.ui.docs;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.Matrix;
-import android.graphics.Typeface;
 import android.graphics.pdf.PdfRenderer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
-import android.text.SpannableString;
-import android.text.style.ForegroundColorSpan;
-import android.text.style.StyleSpan;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
-import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.Toolbar;
-import androidx.cardview.widget.CardView;
-import androidx.core.content.FileProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import android.widget.SeekBar;
+
 import com.curosoft.konvert.R;
+import com.curosoft.konvert.utils.EnhancedDocumentConverter;
+
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class DocumentViewerActivity extends AppCompatActivity {
     
     // UI Components
     private Toolbar toolbar;
-    private ScrollView nestedScrollView;
-    private CardView textContentCard, pdfContentCard;
-    private TextView documentContent, textSizeIndicator, pdfZoomIndicator, pageIndicator;
-    private ImageView pdfImageView;
-    private LinearLayout pdfNavigationBar, textControls, pdfControls;
-    private AppCompatButton btnTextSizeDecrease, btnTextSizeIncrease;
-    private AppCompatButton btnPdfZoomOut, btnPdfZoomIn, btnPrevPage, btnNextPage;
-    private ImageButton fabDarkMode;
-    private ScrollView pdfVerticalScroll;
+    private LinearLayout textContainer, controlsBottomSheet;
+    private TextView documentTitle, documentContent, pageIndicator;
+    private RecyclerView pdfPagesRecyclerView;
+    private WebView docxWebView;
+    private FloatingActionButton fabShare;
+    private BottomSheetBehavior<LinearLayout> bottomSheetBehavior;
+    
+    // Controls
+    private LinearLayout textSizeControls, pdfZoomControls, pageNavigationControls;
+    private SeekBar textSizeSlider, pdfZoomSlider;
+    private ImageButton btnPrevPage, btnNextPage;
     
     // Document state
     private String fileName;
     private Uri fileUri;
     private String documentType; // "pdf", "docx", "txt"
     
-    // PDF state
-    private PdfRenderer pdfRenderer;
-    private PdfRenderer.Page currentPage;
-    private int currentPageIndex = 0;
-    private int totalPages = 0;
-    private Bitmap originalPdfBitmap;
-    
-    // Zoom and display state
-    private float currentTextSize = 14f;
-    private float currentPdfZoom = 1.0f;
-    private final float MIN_TEXT_SIZE = 8f;
-    private final float MAX_TEXT_SIZE = 24f;
-    private final float MIN_PDF_ZOOM = 0.5f;
-    private final float MAX_PDF_ZOOM = 3.0f;
-    private Matrix pdfMatrix = new Matrix();
+    // Gesture detection for pinch-to-zoom
     private ScaleGestureDetector scaleGestureDetector;
+    private float textScaleFactor = 1.0f;
+    private static final float MIN_SCALE = 0.5f;
+    private static final float MAX_SCALE = 3.0f;
     
-    // Dark mode state
-    private boolean isDarkMode = false;
+    // PDF components
+    private PdfPageAdapter pdfAdapter;
+    private PdfRenderer pdfRenderer;
+    private int totalPages = 0;
+    private int currentPageIndex = 0;
+    
+    // Document display state
+    private float currentTextSize = 16f;
+    private float currentZoom = 1.0f;
     
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -78,13 +79,15 @@ public class DocumentViewerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_document_viewer);
         
         initializeViews();
-        setupToolbar();
-        setupGestureDetector();
+        setupBottomSheet();
         setupClickListeners();
         
         // Get document info from intent
         fileUri = getIntent().getData();
         fileName = getIntent().getStringExtra("fileName");
+        
+        // Setup toolbar after getting fileName
+        setupToolbar();
         
         // Fallback: try to get file path from extras and convert to URI
         if (fileUri == null) {
@@ -92,54 +95,90 @@ public class DocumentViewerActivity extends AppCompatActivity {
             if (filePath != null) {
                 try {
                     File file = new File(filePath);
-                    fileUri = FileProvider.getUriForFile(
-                        this,
-                        getPackageName() + ".provider",
-                        file
-                    );
+                    if (file.exists() && file.canRead()) {
+                        fileUri = androidx.core.content.FileProvider.getUriForFile(
+                            this,
+                            getPackageName() + ".provider",
+                            file
+                        );
+                    } else {
+                        showError("File not found or cannot be read: " + filePath);
+                        finish();
+                        return;
+                    }
                 } catch (Exception e) {
-                    // If FileProvider fails, use regular file URI
-                    File file = new File(filePath);
-                    fileUri = Uri.fromFile(file);
+                    try {
+                        File file = new File(filePath);
+                        if (file.exists() && file.canRead()) {
+                            fileUri = Uri.fromFile(file);
+                        } else {
+                            showError("File not found: " + filePath);
+                            finish();
+                            return;
+                        }
+                    } catch (Exception ex) {
+                        showError("Unable to access file: " + ex.getMessage());
+                        finish();
+                        return;
+                    }
                 }
             }
         }
         
         if (fileUri == null) {
-            showError("Unable to open document: missing file URI");
+            showError("Unable to open document: No file specified");
+            finish();
             return;
         }
         
-        // Set toolbar title
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle(fileName != null ? fileName : "Document");
+        // Set document title
+        if (fileName != null) {
+            documentTitle.setText(fileName);
+        }
+        
+        // Validate document access before proceeding
+        if (!validateDocumentAccess()) {
+            finish();
+            return;
         }
         
         // Determine document type and display
         determineDocumentTypeAndDisplay();
     }
     
+    /**
+     * Validate that we can access the document URI
+     */
+    private boolean validateDocumentAccess() {
+        try {
+            // Try to get the input stream to verify access
+            getContentResolver().openInputStream(fileUri).close();
+            return true;
+        } catch (Exception e) {
+            showError("Cannot access document: " + e.getMessage());
+            return false;
+        }
+    }
+    
     private void initializeViews() {
         toolbar = findViewById(R.id.toolbar);
-        nestedScrollView = findViewById(R.id.nestedScrollView);
-        textContentCard = findViewById(R.id.textContentCard);
-        pdfContentCard = findViewById(R.id.pdfContentCard);
+        textContainer = findViewById(R.id.textContainer);
+        documentTitle = findViewById(R.id.documentTitle);
         documentContent = findViewById(R.id.documentContent);
-        textSizeIndicator = findViewById(R.id.textSizeIndicator);
-        pdfZoomIndicator = findViewById(R.id.pdfZoomIndicator);
-        pageIndicator = findViewById(R.id.pageIndicator);
-        pdfImageView = findViewById(R.id.pdfImageView);
-        pdfNavigationBar = findViewById(R.id.pdfNavigationBar);
-        textControls = findViewById(R.id.textControls);
-        pdfControls = findViewById(R.id.pdfControls);
-        btnTextSizeDecrease = findViewById(R.id.btnTextSizeDecrease);
-        btnTextSizeIncrease = findViewById(R.id.btnTextSizeIncrease);
-        btnPdfZoomOut = findViewById(R.id.btnPdfZoomOut);
-        btnPdfZoomIn = findViewById(R.id.btnPdfZoomIn);
+        pdfPagesRecyclerView = findViewById(R.id.pdfPagesRecyclerView);
+        docxWebView = findViewById(R.id.docxWebView);
+        fabShare = findViewById(R.id.fabShare);
+        controlsBottomSheet = findViewById(R.id.controlsBottomSheet);
+        
+        // Controls
+        textSizeControls = findViewById(R.id.textSizeControls);
+        pdfZoomControls = findViewById(R.id.pdfZoomControls);
+        pageNavigationControls = findViewById(R.id.pageNavigationControls);
+        textSizeSlider = findViewById(R.id.textSizeSlider);
+        pdfZoomSlider = findViewById(R.id.pdfZoomSlider);
         btnPrevPage = findViewById(R.id.btnPrevPage);
         btnNextPage = findViewById(R.id.btnNextPage);
-        fabDarkMode = findViewById(R.id.fabDarkMode);
-        pdfVerticalScroll = findViewById(R.id.pdfVerticalScroll);
+        pageIndicator = findViewById(R.id.pageIndicator);
     }
     
     private void setupToolbar() {
@@ -147,108 +186,140 @@ public class DocumentViewerActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
+            // Set document filename as title
+            if (fileName != null) {
+                getSupportActionBar().setTitle(fileName);
+            } else {
+                getSupportActionBar().setTitle("Document");
+            }
         }
+        
+        toolbar.setNavigationOnClickListener(v -> finish());
     }
     
-    private void setupGestureDetector() {
-        scaleGestureDetector = new ScaleGestureDetector(this, new ScaleGestureDetector.SimpleOnScaleGestureListener() {
-            @Override
-            public boolean onScale(ScaleGestureDetector detector) {
-                if (documentType != null && documentType.equals("pdf") && originalPdfBitmap != null) {
-                    float scaleFactor = detector.getScaleFactor();
-                    currentPdfZoom *= scaleFactor;
-                    currentPdfZoom = Math.max(MIN_PDF_ZOOM, Math.min(currentPdfZoom, MAX_PDF_ZOOM));
-                    applyPdfZoom();
-                    return true;
-                }
-                return false;
-            }
-        });
+    private void setupBottomSheet() {
+        bottomSheetBehavior = BottomSheetBehavior.from(controlsBottomSheet);
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        bottomSheetBehavior.setPeekHeight(0);
     }
     
     private void setupClickListeners() {
-        // Text size controls
-        btnTextSizeDecrease.setOnClickListener(v -> {
-            if (currentTextSize > MIN_TEXT_SIZE) {
-                currentTextSize -= 2f;
-                applyTextSize();
+        fabShare.setOnClickListener(v -> shareDocument());
+        
+        // Setup pinch-to-zoom for text content
+        setupPinchToZoom();
+        
+        // Text size slider
+        textSizeSlider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser) {
+                    currentTextSize = 12 + progress; // Range 12-24
+                    documentContent.setTextSize(currentTextSize);
+                }
             }
+            
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+            
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {}
         });
         
-        btnTextSizeIncrease.setOnClickListener(v -> {
-            if (currentTextSize < MAX_TEXT_SIZE) {
-                currentTextSize += 2f;
-                applyTextSize();
+        // PDF zoom slider
+        pdfZoomSlider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser) {
+                    currentZoom = 0.5f + (progress * 0.1f); // Range 0.5-3.0
+                    if (pdfAdapter != null) {
+                        pdfAdapter.setZoomLevel(currentZoom);
+                    }
+                }
             }
+            
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+            
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {}
         });
         
-        // PDF zoom controls
-        btnPdfZoomOut.setOnClickListener(v -> {
-            if (currentPdfZoom > MIN_PDF_ZOOM) {
-                currentPdfZoom -= 0.25f;
-                applyPdfZoom();
-            }
-        });
-        
-        btnPdfZoomIn.setOnClickListener(v -> {
-            if (currentPdfZoom < MAX_PDF_ZOOM) {
-                currentPdfZoom += 0.25f;
-                applyPdfZoom();
-            }
-        });
-        
-        // PDF navigation
+        // Page navigation
         btnPrevPage.setOnClickListener(v -> {
             if (currentPageIndex > 0) {
                 currentPageIndex--;
-                renderPdfPage();
+                scrollToPage(currentPageIndex);
+                updatePageIndicator();
             }
         });
         
         btnNextPage.setOnClickListener(v -> {
             if (currentPageIndex < totalPages - 1) {
                 currentPageIndex++;
-                renderPdfPage();
+                scrollToPage(currentPageIndex);
+                updatePageIndicator();
+            }
+        });
+    }
+    
+    private void setupPinchToZoom() {
+        scaleGestureDetector = new ScaleGestureDetector(this, new ScaleGestureDetector.SimpleOnScaleGestureListener() {
+            @Override
+            public boolean onScale(ScaleGestureDetector detector) {
+                if ("txt".equals(documentType)) {
+                    textScaleFactor *= detector.getScaleFactor();
+                    textScaleFactor = Math.max(MIN_SCALE, Math.min(textScaleFactor, MAX_SCALE));
+                    
+                    // Apply scale to text size
+                    float newTextSize = currentTextSize * textScaleFactor;
+                    documentContent.setTextSize(newTextSize);
+                    
+                    // Update slider to reflect new size
+                    int sliderProgress = Math.max(0, Math.min(12, (int)(newTextSize - 12)));
+                    textSizeSlider.setProgress(sliderProgress);
+                    
+                    return true;
+                }
+                return false;
             }
         });
         
-        // Dark mode toggle
-        fabDarkMode.setOnClickListener(v -> toggleDarkMode());
-        
-        // PDF touch listener for gestures
-        pdfImageView.setOnTouchListener((v, event) -> {
-            if (documentType != null && documentType.equals("pdf")) {
+        // Set touch listener on text container for pinch-to-zoom
+        textContainer.setOnTouchListener((v, event) -> {
+            if ("txt".equals(documentType)) {
                 scaleGestureDetector.onTouchEvent(event);
                 return true;
             }
             return false;
         });
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.document_viewer_menu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            finish();
-            return true;
-        } else if (item.getItemId() == R.id.action_share) {
-            shareDocument();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-    
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        if (documentType != null && documentType.equals("pdf")) {
-            scaleGestureDetector.onTouchEvent(event);
-        }
-        return super.onTouchEvent(event);
+        
+        // Setup pinch-to-zoom for PDF RecyclerView
+        ScaleGestureDetector pdfScaleDetector = new ScaleGestureDetector(this, new ScaleGestureDetector.SimpleOnScaleGestureListener() {
+            @Override
+            public boolean onScale(ScaleGestureDetector detector) {
+                if ("pdf".equals(documentType) && pdfAdapter != null) {
+                    currentZoom *= detector.getScaleFactor();
+                    currentZoom = Math.max(0.5f, Math.min(currentZoom, 3.0f));
+                    
+                    pdfAdapter.setZoomLevel(currentZoom);
+                    
+                    // Update zoom slider
+                    int sliderProgress = (int)((currentZoom - 0.5f) * 10); // Convert 0.5-3.0 to 0-25
+                    pdfZoomSlider.setProgress(sliderProgress);
+                    
+                    return true;
+                }
+                return false;
+            }
+        });
+        
+        pdfPagesRecyclerView.setOnTouchListener((v, event) -> {
+            if ("pdf".equals(documentType)) {
+                pdfScaleDetector.onTouchEvent(event);
+            }
+            return false; // Let RecyclerView handle scrolling
+        });
     }
     
     private void determineDocumentTypeAndDisplay() {
@@ -275,11 +346,19 @@ public class DocumentViewerActivity extends AppCompatActivity {
     }
     
     private void displayPdf() {
-        hideAllCards();
-        pdfContentCard.setVisibility(View.VISIBLE);
-        pdfNavigationBar.setVisibility(View.VISIBLE);
+        hideAllViews();
+        findViewById(R.id.pdfContainer).setVisibility(View.VISIBLE);
         
-        try (ParcelFileDescriptor fd = getContentResolver().openFileDescriptor(fileUri, "r")) {
+        // Show PDF controls
+        pdfZoomControls.setVisibility(View.VISIBLE);
+        pageNavigationControls.setVisibility(View.VISIBLE);
+        textSizeControls.setVisibility(View.GONE);
+        
+        // Reset zoom level for new document
+        currentZoom = 1.0f;
+        
+        try {
+            ParcelFileDescriptor fd = getContentResolver().openFileDescriptor(fileUri, "r");
             if (fd == null) {
                 showError("Cannot access PDF file");
                 return;
@@ -289,8 +368,21 @@ public class DocumentViewerActivity extends AppCompatActivity {
             totalPages = pdfRenderer.getPageCount();
             currentPageIndex = 0;
             
-            renderPdfPage();
-            updatePdfNavigation();
+            if (totalPages == 0) {
+                showError("PDF file has no pages");
+                return;
+            }
+            
+            // Setup RecyclerView for PDF pages
+            pdfAdapter = new PdfPageAdapter();
+            pdfPagesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+            pdfPagesRecyclerView.setAdapter(pdfAdapter);
+            
+            pdfAdapter.setPdfRenderer(pdfRenderer);
+            updatePageIndicator();
+            
+            // Show success message for debugging
+            Toast.makeText(this, "PDF loaded: " + totalPages + " pages", Toast.LENGTH_SHORT).show();
             
         } catch (IOException | SecurityException e) {
             showError("Failed to open PDF: " + e.getMessage());
@@ -298,247 +390,230 @@ public class DocumentViewerActivity extends AppCompatActivity {
             showError("Unexpected error opening PDF: " + e.getMessage());
         }
     }
-
-    private void renderPdfPage() {
-        if (pdfRenderer == null || currentPageIndex < 0 || currentPageIndex >= totalPages) {
-            return;
-        }
-        
-        try {
-            if (currentPage != null) {
-                currentPage.close();
-            }
-            
-            currentPage = pdfRenderer.openPage(currentPageIndex);
-            
-            // Create bitmap with appropriate size
-            int width = currentPage.getWidth();
-            int height = currentPage.getHeight();
-            
-            // Scale down if too large to avoid memory issues
-            if (width > 2048 || height > 2048) {
-                float scale = Math.min(2048f / width, 2048f / height);
-                width = Math.round(width * scale);
-                height = Math.round(height * scale);
-            }
-            
-            originalPdfBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-            currentPage.render(originalPdfBitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);
-            
-            applyPdfZoom();
-            updatePdfNavigation();
-            
-        } catch (Exception e) {
-            showError("Failed to render PDF page: " + e.getMessage());
-        }
-    }
     
     private void displayTextFile() {
-        hideAllCards();
-        textContentCard.setVisibility(View.VISIBLE);
+        hideAllViews();
+        textContainer.setVisibility(View.VISIBLE);
         
-        try (java.io.InputStream is = getContentResolver().openInputStream(fileUri)) {
-            if (is == null) {
-                showError("Cannot access text file");
-                return;
+        // Show text controls
+        textSizeControls.setVisibility(View.VISIBLE);
+        pdfZoomControls.setVisibility(View.GONE);
+        pageNavigationControls.setVisibility(View.GONE);
+        
+        // Reset text scale factor for new document
+        textScaleFactor = 1.0f;
+        
+        try {
+            String content = readTextFromUri(fileUri);
+            if (content != null) {
+                documentContent.setText(content);
+                documentContent.setTextSize(currentTextSize);
+                textSizeSlider.setProgress((int)(currentTextSize - 12)); // Convert back to 0-12 range
+            } else {
+                showError("Failed to read text file");
             }
-            
-            java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(is));
-            StringBuilder sb = new StringBuilder();
-            String line;
-            int lineCount = 0;
-            
-            while ((line = br.readLine()) != null && lineCount < 2000) { // Increased limit
-                sb.append(line).append("\n");
-                lineCount++;
-            }
-            br.close();
-            
-            String content = sb.toString();
-            if (lineCount >= 2000) {
-                content += "\n\n... (File truncated - showing first 2000 lines)";
-            }
-            
-            // Format content with header
-            String headerText = String.format("📄 Text Document\n\nFile: %s\nLines: %d\n\n", 
-                fileName != null ? fileName : "Unknown", lineCount);
-            
-            String fullContent = headerText + (content.isEmpty() ? "File appears to be empty" : content);
-            
-            // Apply monospace font for TXT files
-            documentContent.setTypeface(Typeface.MONOSPACE);
-            documentContent.setText(fullContent);
-            applyTextSize();
-            
         } catch (Exception e) {
-            showError("Failed to open text file: " + e.getMessage());
+            showError("Error reading text file: " + e.getMessage());
         }
     }
     
     private void displayDocxFile() {
-        hideAllCards();
-        textContentCard.setVisibility(View.VISIBLE);
+        hideAllViews();
+        docxWebView.setVisibility(View.VISIBLE);
+        
+        // Show text controls for DOCX
+        textSizeControls.setVisibility(View.VISIBLE);
+        pdfZoomControls.setVisibility(View.GONE);
+        pageNavigationControls.setVisibility(View.GONE);
         
         try {
-            String text = com.curosoft.konvert.utils.DocxToTxtConverter.convertDocxToTxt(this, fileUri);
+            // Try to get real file path first
+            String filePath = getRealPathFromUri(fileUri);
             
-            if (text == null || text.trim().isEmpty()) {
-                String emptyMessage = String.format("📄 DOCX Document\n\nFile: %s\n\nDocument appears to be empty or contains no readable text", 
-                    fileName != null ? fileName : "Unknown");
-                documentContent.setText(createFormattedText(emptyMessage));
+            if (filePath != null && new File(filePath).exists()) {
+                // Use file path if available
+                EnhancedDocumentConverter converter = new EnhancedDocumentConverter();
+                String htmlContent = converter.convertDocxToHtml(filePath);
+                
+                if (htmlContent != null) {
+                    setupWebViewAndLoadContent(htmlContent);
+                } else {
+                    showError("Failed to convert DOCX file");
+                }
             } else {
-                // Format content with header
-                String headerText = String.format("📄 DOCX Document\n\nFile: %s\nCharacters: %d\n\n", 
-                    fileName != null ? fileName : "Unknown", text.length());
-                
-                String fullContent = headerText + text;
-                
-                // Apply regular font for DOCX files
-                documentContent.setTypeface(Typeface.DEFAULT);
-                documentContent.setText(createFormattedText(fullContent));
-                applyTextSize();
+                // Fallback: Copy URI content to temp file and convert
+                convertDocxFromUri();
+            }
+        } catch (Exception e) {
+            showError("Error loading DOCX: " + e.getMessage());
+        }
+    }
+    
+    private void convertDocxFromUri() {
+        try {
+            // Create a temporary file to store the DOCX content
+            File tempDir = new File(getCacheDir(), "temp_docx");
+            if (!tempDir.exists()) {
+                tempDir.mkdirs();
             }
             
+            File tempFile = new File(tempDir, "temp_document.docx");
+            
+            // Copy URI content to temp file
+            try (InputStream inputStream = getContentResolver().openInputStream(fileUri);
+                 java.io.FileOutputStream outputStream = new java.io.FileOutputStream(tempFile)) {
+                
+                if (inputStream == null) {
+                    showError("Cannot read DOCX file");
+                    return;
+                }
+                
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                }
+            }
+            
+            // Convert the temporary file
+            EnhancedDocumentConverter converter = new EnhancedDocumentConverter();
+            String htmlContent = converter.convertDocxToHtml(tempFile.getAbsolutePath());
+            
+            if (htmlContent != null) {
+                setupWebViewAndLoadContent(htmlContent);
+            } else {
+                showError("Failed to convert DOCX file");
+            }
+            
+            // Clean up temp file
+            tempFile.delete();
+            
         } catch (Exception e) {
-            showError("Failed to open DOCX: " + e.getMessage());
+            showError("Error processing DOCX: " + e.getMessage());
         }
     }
     
-    private void hideAllCards() {
-        textContentCard.setVisibility(View.GONE);
-        pdfContentCard.setVisibility(View.GONE);
-        pdfNavigationBar.setVisibility(View.GONE);
-    }
-    
-    private void applyTextSize() {
-        documentContent.setTextSize(currentTextSize);
-        textSizeIndicator.setText(Math.round(currentTextSize) + "sp");
+    private void setupWebViewAndLoadContent(String htmlContent) {
+        docxWebView.getSettings().setJavaScriptEnabled(false);
+        docxWebView.getSettings().setLoadWithOverviewMode(true);
+        docxWebView.getSettings().setUseWideViewPort(true);
+        docxWebView.getSettings().setBuiltInZoomControls(true);
+        docxWebView.getSettings().setDisplayZoomControls(false);
+        docxWebView.getSettings().setSupportZoom(true);
         
-        // Update button states
-        btnTextSizeDecrease.setEnabled(currentTextSize > MIN_TEXT_SIZE);
-        btnTextSizeIncrease.setEnabled(currentTextSize < MAX_TEXT_SIZE);
+        docxWebView.setWebViewClient(new WebViewClient());
+        docxWebView.loadDataWithBaseURL(null, htmlContent, "text/html", "UTF-8", null);
     }
     
-    private void applyPdfZoom() {
-        if (originalPdfBitmap != null) {
-            pdfMatrix.reset();
-            pdfMatrix.setScale(currentPdfZoom, currentPdfZoom);
-            pdfImageView.setScaleType(ImageView.ScaleType.MATRIX);
-            pdfImageView.setImageMatrix(pdfMatrix);
-            pdfImageView.setImageBitmap(originalPdfBitmap);
+    private void hideAllViews() {
+        textContainer.setVisibility(View.GONE);
+        findViewById(R.id.pdfContainer).setVisibility(View.GONE);
+        docxWebView.setVisibility(View.GONE);
+    }
+    
+    private void scrollToPage(int pageIndex) {
+        if (pdfPagesRecyclerView != null) {
+            pdfPagesRecyclerView.smoothScrollToPosition(pageIndex);
+        }
+    }
+    
+    private void updatePageIndicator() {
+        if (totalPages > 0) {
+            pageIndicator.setText(String.format("%d of %d", currentPageIndex + 1, totalPages));
+        }
+    }
+    
+    private String readTextFromUri(Uri uri) {
+        try {
+            InputStream inputStream = getContentResolver().openInputStream(uri);
+            if (inputStream == null) return null;
             
-            pdfZoomIndicator.setText(Math.round(currentPdfZoom * 100) + "%");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+            StringBuilder stringBuilder = new StringBuilder();
+            String line;
             
-            // Update button states
-            btnPdfZoomOut.setEnabled(currentPdfZoom > MIN_PDF_ZOOM);
-            btnPdfZoomIn.setEnabled(currentPdfZoom < MAX_PDF_ZOOM);
+            while ((line = reader.readLine()) != null) {
+                stringBuilder.append(line).append("\n");
+            }
+            
+            reader.close();
+            inputStream.close();
+            
+            return stringBuilder.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
     
-    private void updatePdfNavigation() {
-        pageIndicator.setText((currentPageIndex + 1) + " of " + totalPages);
-        btnPrevPage.setEnabled(currentPageIndex > 0);
-        btnNextPage.setEnabled(currentPageIndex < totalPages - 1);
-    }
-    
-    private void toggleDarkMode() {
-        isDarkMode = !isDarkMode;
-        
-        if (isDarkMode) {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-            Toast.makeText(this, "Dark mode enabled", Toast.LENGTH_SHORT).show();
-        } else {
-            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-            Toast.makeText(this, "Light mode enabled", Toast.LENGTH_SHORT).show();
+    private String getRealPathFromUri(Uri uri) {
+        if ("file".equals(uri.getScheme())) {
+            return uri.getPath();
         }
         
-        // Recreate activity to apply theme
-        recreate();
+        // For FileProvider URIs, try to extract the original file path
+        if ("content".equals(uri.getScheme())) {
+            String authority = uri.getAuthority();
+            if (authority != null && authority.endsWith(".provider")) {
+                // This is likely a FileProvider URI
+                String path = uri.getPath();
+                if (path != null) {
+                    // FileProvider paths usually start with /external_files/, /cache_files/, etc.
+                    if (path.startsWith("/external_files/")) {
+                        // Try to construct the real external storage path
+                        String relativePath = path.substring("/external_files/".length());
+                        File externalStorage = android.os.Environment.getExternalStorageDirectory();
+                        File realFile = new File(externalStorage, relativePath);
+                        if (realFile.exists()) {
+                            return realFile.getAbsolutePath();
+                        }
+                    }
+                    // For other paths, we can't easily determine the real path
+                    // Return null to trigger the URI-based fallback
+                }
+            }
+        }
+        
+        return null;
     }
     
     private void shareDocument() {
-        try {
-            Intent shareIntent = new Intent(Intent.ACTION_SEND);
-            shareIntent.setType("*/*");
-            shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
-            shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Sharing: " + (fileName != null ? fileName : "Document"));
-            shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            
-            startActivity(Intent.createChooser(shareIntent, "Share document"));
-        } catch (Exception e) {
-            Toast.makeText(this, "Unable to share document", Toast.LENGTH_SHORT).show();
-        }
+        if (fileUri == null) return;
+        
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType("*/*");
+        shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
+        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        
+        String title = "Share " + (fileName != null ? fileName : "Document");
+        startActivity(Intent.createChooser(shareIntent, title));
     }
     
     private void showError(String message) {
-        hideAllCards();
-        textContentCard.setVisibility(View.VISIBLE);
-        documentContent.setText(message);
-        documentContent.setTypeface(Typeface.DEFAULT);
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-    }
-    
-    private SpannableString createFormattedText(String text) {
-        SpannableString spannable = new SpannableString(text);
-        
-        // Find and style document type header (e.g., "📄 PDF Document")
-        int typeStart = text.indexOf("📄");
-        if (typeStart != -1) {
-            int typeEnd = text.indexOf("\n", typeStart);
-            if (typeEnd != -1) {
-                spannable.setSpan(new StyleSpan(Typeface.BOLD), typeStart, typeEnd, 0);
-                spannable.setSpan(new ForegroundColorSpan(0xFF2196F3), typeStart, typeEnd, 0);
-            }
-        }
-        
-        // Style labels
-        String[] labels = {"File:", "Lines:", "Characters:", "Pages:"};
-        for (String label : labels) {
-            int labelStart = text.indexOf(label);
-            if (labelStart != -1) {
-                spannable.setSpan(new StyleSpan(Typeface.BOLD), labelStart, labelStart + label.length(), 0);
-            }
-        }
-        
-        return spannable;
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
     
     @Override
     protected void onDestroy() {
-        cleanup();
         super.onDestroy();
+        cleanup();
     }
     
     private void cleanup() {
-        try {
-            if (currentPage != null) {
-                currentPage.close();
-                currentPage = null;
-            }
-            if (pdfRenderer != null) {
-                pdfRenderer.close();
-                pdfRenderer = null;
-            }
-            if (originalPdfBitmap != null && !originalPdfBitmap.isRecycled()) {
-                originalPdfBitmap.recycle();
-                originalPdfBitmap = null;
-            }
-        } catch (Exception e) {
-            // Silent cleanup
+        if (pdfAdapter != null) {
+            pdfAdapter.cleanup();
         }
-    }
-    
-    // Gesture detector for PDF pinch-to-zoom
-    private class PdfScaleGestureDetector extends ScaleGestureDetector.SimpleOnScaleGestureListener {
-        @Override
-        public boolean onScale(ScaleGestureDetector detector) {
-            if (originalPdfBitmap != null) {
-                float scaleFactor = detector.getScaleFactor();
-                currentPdfZoom *= scaleFactor;
-                currentPdfZoom = Math.max(MIN_PDF_ZOOM, Math.min(currentPdfZoom, MAX_PDF_ZOOM));
-                applyPdfZoom();
+        
+        if (pdfRenderer != null) {
+            try {
+                pdfRenderer.close();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            return true;
+        }
+        
+        if (docxWebView != null) {
+            docxWebView.destroy();
         }
     }
 }
