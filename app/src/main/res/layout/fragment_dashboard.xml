@@ -11,7 +11,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingHorizontal="20dp"
+        android:paddingHorizontal="6dp"
         android:paddingTop="32dp"
         android:paddingBottom="24dp">
 
@@ -21,9 +21,10 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:fontFamily="casual"
+            android:paddingHorizontal="20dp"
             android:text="Welcome back !"
             android:textColor="@color/clean_text_primary"
-            android:textSize="32sp"
+            android:textSize="38sp"
             android:textStyle="normal"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -37,7 +38,7 @@
             android:layout_marginTop="28dp"
 
             android:fontFamily="monospace"
-            android:paddingHorizontal="10dp"
+            android:paddingHorizontal="20dp"
             android:text="Convert"
             android:textColor="@color/clean_text_primary"
             android:textSize="18sp"
@@ -53,7 +54,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:padding="10dp"
-            android:paddingHorizontal="12dp"
+            android:paddingHorizontal="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/convert_title">
@@ -384,7 +385,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="48dp"
             android:fontFamily="monospace"
-            android:paddingHorizontal="10dp"
+            android:paddingHorizontal="20dp"
             android:text="Recent Files"
             android:textColor="@color/clean_text_primary"
             android:textSize="18sp"

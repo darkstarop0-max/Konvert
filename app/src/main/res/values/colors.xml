@@ -23,6 +23,7 @@
     <color name="text_primary">#1C1C1E</color>
     <color name="text_secondary">#8E8E93</color>
     <color name="text_tertiary">#C7C7CC</color>
+    <color name="text_destructive">#FF3B30</color>
     <color name="text_on_primary">#FFFFFF</color>
     <color name="text_on_accent">#FFFFFF</color>
     <color name="text_on_background">#1C1C1E</color>

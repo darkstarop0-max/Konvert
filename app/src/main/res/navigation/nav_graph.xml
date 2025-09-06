@@ -18,7 +18,7 @@
     <fragment
         android:id="@+id/docsViewerEditorFragment"
         android:name="com.curosoft.konvert.ui.docs.DocsViewerEditorFragment"
-        android:label="Docs"
+        android:label="Documents"
         tools:layout="@layout/fragment_docs_viewer_editor" />
 
     <fragment
