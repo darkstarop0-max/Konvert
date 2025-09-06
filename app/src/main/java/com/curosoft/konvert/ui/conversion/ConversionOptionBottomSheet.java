@@ -25,7 +25,9 @@ import com.curosoft.konvert.R;
 import com.curosoft.konvert.utils.ConversionUtils;
 import com.curosoft.konvert.utils.DocxToPdfConverter;
 import com.curosoft.konvert.utils.DocxToTxtConverter;
+import com.curosoft.konvert.utils.EnhancedDocumentConverter;
 import com.curosoft.konvert.utils.EnhancedFilePickerUtils;
+import com.curosoft.konvert.utils.EnhancedImageConverter;
 import com.curosoft.konvert.utils.ImageConverter;
 import com.curosoft.konvert.utils.PdfToDocxConverter;
 import com.curosoft.konvert.utils.PdfToTxtConverter;
@@ -192,15 +194,15 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
                             selectedFileName != null && selectedFileName.toLowerCase().endsWith(".webp"));
                     List<String> imageTargets = Arrays.asList("PNG", "WEBP", "JPG");
                     if (isJpgFile && imageTargets.contains(selectedFormat.toUpperCase())) {
-                        new JpgImageConversionTask(requireContext(), originalFileUri, selectedFormat.toUpperCase()).execute();
+                        new EnhancedImageConversionTask(requireContext(), originalFileUri, selectedFormat.toUpperCase()).execute();
                         return;
                     }
                     if (isPngFile && (selectedFormat.equalsIgnoreCase("JPG") || selectedFormat.equalsIgnoreCase("WEBP"))) {
-                        new PngImageConversionTask(requireContext(), originalFileUri, selectedFormat.toUpperCase()).execute();
+                        new EnhancedImageConversionTask(requireContext(), originalFileUri, selectedFormat.toUpperCase()).execute();
                         return;
                     }
                     if (isWebpFile && (selectedFormat.equalsIgnoreCase("JPG") || selectedFormat.equalsIgnoreCase("PNG"))) {
-                        new WebpImageConversionTask(requireContext(), originalFileUri, selectedFormat.toLowerCase()).execute();
+                        new EnhancedImageConversionTask(requireContext(), originalFileUri, selectedFormat.toUpperCase()).execute();
                         return;
                     }
                 }
@@ -211,7 +213,7 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
                          selectedFileName.toLowerCase().endsWith(".pdf")) &&
                         selectedFormat.equalsIgnoreCase("DOCX")) {
                         
-                        performPdfToDocxConversion();
+                        new EnhancedPdfToDocxConversionTask(requireContext(), originalFileUri).execute();
                     } 
                     // DOCX to PDF conversion
                     else if ((selectedMimeType != null && 
@@ -220,7 +222,7 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
                              selectedFileName.toLowerCase().endsWith(".docx")) &&
                             selectedFormat.equalsIgnoreCase("PDF")) {
                         
-                        performDocxToPdfConversion();
+                        new EnhancedDocxToPdfConversionTask(requireContext(), originalFileUri).execute();
                     }
                     // DOCX to TXT conversion
                     else if ((selectedMimeType != null && 
@@ -254,7 +256,7 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
                              selectedFileName.toLowerCase().endsWith(".txt")) &&
                             selectedFormat.equalsIgnoreCase("PDF")) {
                         
-                        performTxtToPdfConversion();
+                        new EnhancedTextToPdfConversionTask(requireContext(), originalFileUri).execute();
                     } else {
                         Log.w("ConversionBottomSheet", "Unsupported conversion type selected");
                         Toast.makeText(requireContext(), 
@@ -855,6 +857,188 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
                 
                 Toast.makeText(context, "Conversion successful! Saved to Documents/Konvert/Converted/", Toast.LENGTH_LONG).show();
                 dismiss();
+            }
+        }
+    }
+    
+    /**
+     * Enhanced AsyncTask for image conversion with EXIF preservation
+     */
+    private class EnhancedImageConversionTask extends AsyncTask<Void, Void, EnhancedImageConverter.ConversionResult> {
+        private final Context context;
+        private final Uri inputUri;
+        private final String targetFormat;
+        private ProgressDialog progressDialog;
+        
+        public EnhancedImageConversionTask(Context context, Uri inputUri, String targetFormat) {
+            this.context = context;
+            this.inputUri = inputUri;
+            this.targetFormat = targetFormat;
+        }
+        
+        @Override
+        protected void onPreExecute() {
+            progressDialog = new ProgressDialog(context);
+            progressDialog.setMessage("Converting image to " + targetFormat + "...");
+            progressDialog.setIndeterminate(false);
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+        }
+        
+        @Override
+        protected EnhancedImageConverter.ConversionResult doInBackground(Void... voids) {
+            return EnhancedImageConverter.convertImage(context, inputUri, targetFormat);
+        }
+        
+        @Override
+        protected void onPostExecute(EnhancedImageConverter.ConversionResult result) {
+            if (progressDialog.isShowing()) progressDialog.dismiss();
+            
+            if (result.success) {
+                Toast.makeText(context, 
+                    "High-quality conversion successful! Saved to: " + result.outputPath, 
+                    Toast.LENGTH_LONG).show();
+                dismiss();
+            } else {
+                Toast.makeText(context, 
+                    "Conversion failed: " + (result.errorMessage != null ? result.errorMessage : "Unknown error"), 
+                    Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+    
+    /**
+     * Enhanced AsyncTask for PDF to DOCX conversion with formatting preservation
+     */
+    private class EnhancedPdfToDocxConversionTask extends AsyncTask<Void, Void, EnhancedDocumentConverter.ConversionResult> {
+        private final Context context;
+        private final Uri pdfUri;
+        private ProgressDialog progressDialog;
+        
+        public EnhancedPdfToDocxConversionTask(Context context, Uri pdfUri) {
+            this.context = context;
+            this.pdfUri = pdfUri;
+        }
+        
+        @Override
+        protected void onPreExecute() {
+            progressDialog = new ProgressDialog(context);
+            progressDialog.setMessage("Converting PDF to DOCX with formatting preservation...");
+            progressDialog.setIndeterminate(false);
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+        }
+        
+        @Override
+        protected EnhancedDocumentConverter.ConversionResult doInBackground(Void... voids) {
+            return EnhancedDocumentConverter.convertPdfToDocxWithFormatting(context, pdfUri);
+        }
+        
+        @Override
+        protected void onPostExecute(EnhancedDocumentConverter.ConversionResult result) {
+            if (progressDialog.isShowing()) progressDialog.dismiss();
+            
+            if (result.success) {
+                Toast.makeText(context, 
+                    "Document conversion successful with preserved formatting! Saved to: " + result.outputPath, 
+                    Toast.LENGTH_LONG).show();
+                dismiss();
+            } else {
+                Toast.makeText(context, 
+                    "Conversion failed: " + (result.errorMessage != null ? result.errorMessage : "Unknown error"), 
+                    Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+    
+    /**
+     * Enhanced AsyncTask for DOCX to PDF conversion with formatting preservation
+     */
+    private class EnhancedDocxToPdfConversionTask extends AsyncTask<Void, Void, EnhancedDocumentConverter.ConversionResult> {
+        private final Context context;
+        private final Uri docxUri;
+        private ProgressDialog progressDialog;
+        
+        public EnhancedDocxToPdfConversionTask(Context context, Uri docxUri) {
+            this.context = context;
+            this.docxUri = docxUri;
+        }
+        
+        @Override
+        protected void onPreExecute() {
+            progressDialog = new ProgressDialog(context);
+            progressDialog.setMessage("Converting DOCX to PDF with formatting preservation...");
+            progressDialog.setIndeterminate(false);
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+        }
+        
+        @Override
+        protected EnhancedDocumentConverter.ConversionResult doInBackground(Void... voids) {
+            return EnhancedDocumentConverter.convertDocxToPdfWithFormatting(context, docxUri);
+        }
+        
+        @Override
+        protected void onPostExecute(EnhancedDocumentConverter.ConversionResult result) {
+            if (progressDialog.isShowing()) progressDialog.dismiss();
+            
+            if (result.success) {
+                Toast.makeText(context, 
+                    "Document conversion successful with preserved formatting! Saved to: " + result.outputPath, 
+                    Toast.LENGTH_LONG).show();
+                dismiss();
+            } else {
+                Toast.makeText(context, 
+                    "Conversion failed: " + (result.errorMessage != null ? result.errorMessage : "Unknown error"), 
+                    Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+    
+    /**
+     * Enhanced AsyncTask for Text to PDF conversion with professional layout
+     */
+    private class EnhancedTextToPdfConversionTask extends AsyncTask<Void, Void, EnhancedDocumentConverter.ConversionResult> {
+        private final Context context;
+        private final Uri textUri;
+        private ProgressDialog progressDialog;
+        
+        public EnhancedTextToPdfConversionTask(Context context, Uri textUri) {
+            this.context = context;
+            this.textUri = textUri;
+        }
+        
+        @Override
+        protected void onPreExecute() {
+            progressDialog = new ProgressDialog(context);
+            progressDialog.setMessage("Converting text to professional PDF...");
+            progressDialog.setIndeterminate(false);
+            progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+        }
+        
+        @Override
+        protected EnhancedDocumentConverter.ConversionResult doInBackground(Void... voids) {
+            return EnhancedDocumentConverter.convertTextToPdfProfessional(context, textUri);
+        }
+        
+        @Override
+        protected void onPostExecute(EnhancedDocumentConverter.ConversionResult result) {
+            if (progressDialog.isShowing()) progressDialog.dismiss();
+            
+            if (result.success) {
+                Toast.makeText(context, 
+                    "Professional PDF created successfully! Saved to: " + result.outputPath, 
+                    Toast.LENGTH_LONG).show();
+                dismiss();
+            } else {
+                Toast.makeText(context, 
+                    "Conversion failed: " + (result.errorMessage != null ? result.errorMessage : "Unknown error"), 
+                    Toast.LENGTH_SHORT).show();
             }
         }
     }
