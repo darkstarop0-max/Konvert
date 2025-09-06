@@ -18,6 +18,7 @@ public class SettingsManager {
     private static final String PREF_VIEWER_MODE = "viewer_mode";
     private static final String PREF_FONT_SIZE = "font_size";
     private static final String PREF_DARK_MODE = "dark_mode";
+    private static final String PREF_THEME_MODE = "theme_mode";
     private static final String PREF_FIRST_LAUNCH = "first_launch";
     private static final String PREF_PRIVACY_ACCEPTED = "privacy_accepted";
     
@@ -25,6 +26,12 @@ public class SettingsManager {
     private static final boolean DEFAULT_CONTINUOUS_VIEW = false;
     private static final int DEFAULT_FONT_SIZE = 14;
     private static final boolean DEFAULT_DARK_MODE = false;
+    private static final int DEFAULT_THEME_MODE = 2; // System default
+    
+    // Theme mode constants
+    public static final int THEME_LIGHT = 0;
+    public static final int THEME_DARK = 1;
+    public static final int THEME_SYSTEM = 2;
     
     private final SharedPreferences prefs;
     private final Context context;
@@ -119,17 +126,32 @@ public class SettingsManager {
     }
     
     /**
-     * Check if dark mode is enabled
+     * Check if dark mode is enabled (based on theme mode)
      */
     public boolean isDarkModeEnabled() {
-        return prefs.getBoolean(PREF_DARK_MODE, DEFAULT_DARK_MODE);
+        int themeMode = getThemeMode();
+        return themeMode == THEME_DARK;
     }
     
     /**
-     * Set dark mode preference
+     * Set dark mode preference (updates theme mode)
      */
     public void setDarkModeEnabled(boolean enabled) {
-        prefs.edit().putBoolean(PREF_DARK_MODE, enabled).apply();
+        setThemeMode(enabled ? THEME_DARK : THEME_LIGHT);
+    }
+    
+    /**
+     * Get current theme mode (0=Light, 1=Dark, 2=System)
+     */
+    public int getThemeMode() {
+        return prefs.getInt(PREF_THEME_MODE, DEFAULT_THEME_MODE);
+    }
+    
+    /**
+     * Set theme mode (0=Light, 1=Dark, 2=System)
+     */
+    public void setThemeMode(int themeMode) {
+        prefs.edit().putInt(PREF_THEME_MODE, themeMode).apply();
     }
     
     // Privacy & Permissions

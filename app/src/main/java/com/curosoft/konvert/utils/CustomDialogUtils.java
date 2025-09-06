@@ -2,11 +2,13 @@ package com.curosoft.konvert.utils;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
 import android.widget.EditText;
 import android.widget.TextView;
+import androidx.appcompat.app.AlertDialog;
 
 import com.curosoft.konvert.R;
 
@@ -21,6 +23,10 @@ public class CustomDialogUtils {
     
     public interface OnRenameListener {
         void onRename(String newName);
+    }
+    
+    public interface OnSingleChoiceListener {
+        void onChoice(DialogInterface dialog, int selectedIndex);
     }
     
     /**
@@ -119,6 +125,49 @@ public class CustomDialogUtils {
         
         okButton.setOnClickListener(v -> dialog.dismiss());
         
+        dialog.show();
+    }
+    
+    /**
+     * Show single choice dialog
+     */
+    public static void showSingleChoiceDialog(Context context, String title, String message, 
+                                            String[] options, int selectedIndex, OnSingleChoiceListener listener) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle(title);
+        if (message != null && !message.isEmpty()) {
+            builder.setMessage(message);
+        }
+        
+        builder.setSingleChoiceItems(options, selectedIndex, (dialog, which) -> {
+            if (listener != null) {
+                listener.onChoice(dialog, which);
+            }
+        });
+        
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+        
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+    
+    /**
+     * Show info dialog
+     */
+    public static void showInfoDialog(Context context, String title, String message, 
+                                    String buttonText, Runnable onButtonClick) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle(title);
+        builder.setMessage(message);
+        
+        builder.setPositiveButton(buttonText, (dialog, which) -> {
+            if (onButtonClick != null) {
+                onButtonClick.run();
+            }
+            dialog.dismiss();
+        });
+        
+        AlertDialog dialog = builder.create();
         dialog.show();
     }
     
