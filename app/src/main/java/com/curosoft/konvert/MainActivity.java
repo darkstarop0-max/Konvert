@@ -1,7 +1,10 @@
 package com.curosoft.konvert;
 
+import android.animation.AnimatorInflater;
+import android.animation.AnimatorSet;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -72,6 +75,9 @@ public class MainActivity extends AppCompatActivity {
             NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
             NavigationUI.setupWithNavController(bottomNavigationView, navController);
             
+            // Add smooth animations to bottom navigation items
+            setupBottomNavigationAnimations();
+            
             // Handle destination changes to show/hide bottom navigation and update toolbar title
             navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
                 int destinationId = destination.getId();
@@ -85,6 +91,28 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         }
+    }
+    
+    private void setupBottomNavigationAnimations() {
+        bottomNavigationView.setOnItemSelectedListener(item -> {
+            // Animate the selected item
+            View selectedView = bottomNavigationView.findViewById(item.getItemId());
+            if (selectedView != null) {
+                AnimatorSet scaleUp = (AnimatorSet) AnimatorInflater.loadAnimator(this, R.animator.nav_item_scale_up);
+                scaleUp.setTarget(selectedView);
+                scaleUp.start();
+                
+                // Scale back down after a short delay
+                selectedView.postDelayed(() -> {
+                    AnimatorSet scaleDown = (AnimatorSet) AnimatorInflater.loadAnimator(this, R.animator.nav_item_scale_down);
+                    scaleDown.setTarget(selectedView);
+                    scaleDown.start();
+                }, 100);
+            }
+            
+            // Let NavigationUI handle the actual navigation
+            return NavigationUI.onNavDestinationSelected(item, navController);
+        });
     }
 
     @Override

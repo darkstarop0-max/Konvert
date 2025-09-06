@@ -41,6 +41,12 @@
     <color name="nav_item_selected">#0A84FF</color>
     <color name="nav_item_unselected">#8E8E93</color>
     <color name="nav_background">#FAFAFA</color>
+    <color name="nav_background_blur">#F5FAFAFA</color>
+    <color name="nav_border">#E5E5EA</color>
+    <color name="nav_inner_glow">#30FFFFFF</color>
+    <color name="nav_indicator">#0A84FF</color>
+    <color name="nav_shadow_start">#10000000</color>
+    <color name="nav_shadow_end">#00000000</color>
     
     <!-- Other UI Elements - Apple-inspired -->
     <color name="error">#FF453A</color>

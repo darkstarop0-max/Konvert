@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="240dp"
+    android:height="240dp"
+    android:viewportWidth="240"
+    android:viewportHeight="240">
+    
+    <!-- Background circle -->
+    <path
+        android:pathData="M120,20 A100,100 0 1,1 120,220 A100,100 0 1,1 120,20 Z"
+        android:fillColor="@color/accent_light"
+        android:fillAlpha="0.1" />
+    
+    <!-- Main transformation device -->
+    <group android:translateX="120" android:translateY="120">
+        <!-- Device body -->
+        <path
+            android:pathData="M-30,-40 L30,-40 C35,-40 40,-35 40,-30 L40,30 C40,35 35,40 30,40 L-30,40 C-35,40 -40,35 -40,30 L-40,-30 C-40,-35 -35,-40 -30,-40 Z"
+            android:fillColor="@color/primary"
+            android:strokeColor="@color/primary_dark"
+            android:strokeWidth="2" />
+        
+        <!-- Screen -->
+        <path
+            android:pathData="M-25,-30 L25,-30 C28,-30 30,-28 30,-25 L30,25 C30,28 28,30 25,30 L-25,30 C-28,30 -30,28 -30,25 L-30,-25 C-30,-28 -28,-30 -25,-30 Z"
+            android:fillColor="@color/background_light" />
+        
+        <!-- Transform arrow -->
+        <path
+            android:pathData="M-15,0 L10,0 M5,-5 L10,0 L5,5"
+            android:strokeColor="@color/accent"
+            android:strokeWidth="3"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+        
+        <!-- Progress dots -->
+        <path
+            android:pathData="M0,-18 A8,8 0 1,1 0,-2 A8,8 0 1,1 0,-18 Z"
+            android:fillColor="@color/accent" />
+        <path
+            android:pathData="M20,-6 A6,6 0 1,1 20,6 A6,6 0 1,1 20,-6 Z"
+            android:fillColor="@color/primary" />
+        <path
+            android:pathData="M20,4 A6,6 0 1,1 20,16 A6,6 0 1,1 20,4 Z"
+            android:fillColor="@color/primary_light" />
+    </group>
+    
+    <!-- Floating elements -->
+    <group android:translateX="60" android:translateY="80">
+        <path
+            android:pathData="M0,-6 L4,0 L0,6 L-4,0 Z"
+            android:fillColor="@color/accent"
+            android:fillAlpha="0.6" />
+    </group>
+    
+    <group android:translateX="180" android:translateY="160">
+        <path
+            android:pathData="M0,-4 L3,0 L0,4 L-3,0 Z"
+            android:fillColor="@color/primary"
+            android:fillAlpha="0.4" />
+    </group>
+    
+</vector>

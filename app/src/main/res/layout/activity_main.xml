@@ -47,22 +47,29 @@
         android:id="@+id/bottom_navigation_container"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="8dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="20dp"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="2dp"
+        app:cardBackgroundColor="@color/nav_background_blur"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/bottom_navigation"
+            style="@style/Widget.Konvert.BottomNavigation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/nav_background"
-            app:itemIconTint="@drawable/selector_bottom_nav_item"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:fitsSystemWindows="true"
+            app:itemIconTint="@null"
             app:itemTextColor="@drawable/selector_bottom_nav_item"
+            app:itemBackground="@null"
+            app:itemRippleColor="@color/ripple_primary"
+            app:itemActiveIndicatorStyle="@null"
             app:menu="@menu/bottom_navigation_menu" />
             
     </androidx.cardview.widget.CardView>

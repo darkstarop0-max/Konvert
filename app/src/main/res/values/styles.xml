@@ -139,6 +139,33 @@
         <item name="android:windowSoftInputMode">adjustResize</item>
     </style>
     
+    <!-- Bottom Navigation Styles - Apple-inspired -->
+    <style name="Widget.Konvert.BottomNavigation" parent="Widget.Design.BottomNavigationView">
+        <item name="android:background">@drawable/bg_bottom_nav</item>
+        <item name="android:paddingTop">8dp</item>
+        <item name="android:paddingBottom">8dp</item>
+        <item name="itemIconSize">24dp</item>
+        <item name="itemTextAppearanceActive">@style/TextAppearance.Konvert.BottomNav.Active</item>
+        <item name="itemTextAppearanceInactive">@style/TextAppearance.Konvert.BottomNav.Inactive</item>
+        <item name="itemHorizontalTranslationEnabled">false</item>
+        <item name="labelVisibilityMode">labeled</item>
+        <item name="elevation">0dp</item>
+    </style>
+    
+    <style name="TextAppearance.Konvert.BottomNav.Active" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:textSize">11sp</item>
+        <item name="android:textColor">@color/nav_item_selected</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:letterSpacing">0.01</item>
+    </style>
+    
+    <style name="TextAppearance.Konvert.BottomNav.Inactive" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:textSize">11sp</item>
+        <item name="android:textColor">@color/nav_item_unselected</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:letterSpacing">0.01</item>
+    </style>
+    
     <style name="AppleBottomSheetStyle" parent="Widget.MaterialComponents.BottomSheet.Modal">
         <item name="shapeAppearanceOverlay">@style/ShapeAppearanceBottomSheetDialog</item>
         <item name="backgroundTint">@android:color/white</item>

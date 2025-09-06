@@ -2,14 +2,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/dashboardFragment"
-        android:icon="@android:drawable/ic_menu_compass"
+        android:icon="@drawable/selector_nav_home"
         android:title="@string/dashboard" />
     <item
         android:id="@+id/docsViewerEditorFragment"
-        android:icon="@android:drawable/ic_menu_edit"
+        android:icon="@drawable/selector_nav_docs"
         android:title="Docs" />
     <item
         android:id="@+id/settingsFragment"
-        android:icon="@android:drawable/ic_menu_preferences"
+        android:icon="@drawable/selector_nav_settings"
         android:title="@string/settings" />
 </menu>
