@@ -68,4 +68,9 @@
     <color name="clean_text_secondary">#EBEBF5</color>
     <color name="clean_text_tertiary">#8E8E93</color>
     <color name="clean_divider">#38383A</color>
+    
+    <!-- Coming Soon Badge - Dark mode -->
+    <color name="coming_soon_background">#2C2C2E</color>
+    <color name="coming_soon_border">#38383A</color>
+    <color name="coming_soon_text">#8E8E93</color>
 </resources>

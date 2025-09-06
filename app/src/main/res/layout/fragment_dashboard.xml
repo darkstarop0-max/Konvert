@@ -152,9 +152,8 @@
                 android:layout_width="0dp"
                 android:layout_height="100dp"
                 android:layout_margin="12dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?android:attr/selectableItemBackground"
+                android:clickable="false"
+                android:focusable="false"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="3dp"
                 app:cardBackgroundColor="@color/clean_surface"
@@ -167,25 +166,40 @@
                     android:layout_height="match_parent"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:padding="8dp">
+                    android:padding="8dp"
+                    android:alpha="0.6">
 
                     <ImageView
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:src="@drawable/ic_files_outline"
-                        android:tint="@color/ripple_primary" />
+                        android:tint="@color/clean_text_secondary" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:text="Files"
-                        android:textColor="@color/clean_text_primary"
+                        android:textColor="@color/clean_text_secondary"
                         android:textSize="14sp"
                         android:textStyle="bold"
                         android:fontFamily="sans-serif" />
 
                 </LinearLayout>
+
+                <!-- Coming Soon Badge -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top|end"
+                    android:layout_margin="8dp"
+                    android:background="@drawable/bg_coming_soon_badge"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="4dp"
+                    android:text="Coming Soon"
+                    android:textColor="@color/coming_soon_text"
+                    android:textSize="10sp"
+                    android:fontFamily="sans-serif-medium" />
 
             </androidx.cardview.widget.CardView>
 
@@ -196,9 +210,8 @@
                 android:layout_width="0dp"
                 android:layout_height="100dp"
                 android:layout_margin="12dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?android:attr/selectableItemBackground"
+                android:clickable="false"
+                android:focusable="false"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="3dp"
                 app:cardBackgroundColor="@color/clean_surface"
@@ -211,25 +224,40 @@
                     android:layout_height="match_parent"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:padding="8dp">
+                    android:padding="8dp"
+                    android:alpha="0.6">
 
                     <ImageView
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:src="@drawable/ic_audio_outline"
-                        android:tint="@color/ripple_primary" />
+                        android:tint="@color/clean_text_secondary" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:text="Audio"
-                        android:textColor="@color/clean_text_primary"
+                        android:textColor="@color/clean_text_secondary"
                         android:textSize="14sp"
                         android:textStyle="bold"
                         android:fontFamily="sans-serif" />
 
                 </LinearLayout>
+
+                <!-- Coming Soon Badge -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top|end"
+                    android:layout_margin="8dp"
+                    android:background="@drawable/bg_coming_soon_badge"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="4dp"
+                    android:text="Coming Soon"
+                    android:textColor="@color/coming_soon_text"
+                    android:textSize="10sp"
+                    android:fontFamily="sans-serif-medium" />
 
             </androidx.cardview.widget.CardView>
 
@@ -239,9 +267,8 @@
                 android:layout_width="0dp"
                 android:layout_height="100dp"
                 android:layout_margin="12dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?android:attr/selectableItemBackground"
+                android:clickable="false"
+                android:focusable="false"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="3dp"
                 app:cardBackgroundColor="@color/clean_surface"
@@ -254,25 +281,40 @@
                     android:layout_height="match_parent"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:padding="8dp">
+                    android:padding="8dp"
+                    android:alpha="0.6">
 
                     <ImageView
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:src="@drawable/ic_video_outline"
-                        android:tint="@color/ripple_primary" />
+                        android:tint="@color/clean_text_secondary" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:text="Video"
-                        android:textColor="@color/clean_text_primary"
+                        android:textColor="@color/clean_text_secondary"
                         android:textSize="14sp"
                         android:textStyle="bold"
                         android:fontFamily="sans-serif" />
 
                 </LinearLayout>
+
+                <!-- Coming Soon Badge -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top|end"
+                    android:layout_margin="8dp"
+                    android:background="@drawable/bg_coming_soon_badge"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="4dp"
+                    android:text="Coming Soon"
+                    android:textColor="@color/coming_soon_text"
+                    android:textSize="10sp"
+                    android:fontFamily="sans-serif-medium" />
 
             </androidx.cardview.widget.CardView>
 
@@ -282,9 +324,8 @@
                 android:layout_width="0dp"
                 android:layout_height="100dp"
                 android:layout_margin="12dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?android:attr/selectableItemBackground"
+                android:clickable="false"
+                android:focusable="false"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="3dp"
                 app:cardBackgroundColor="@color/clean_surface"
@@ -297,25 +338,40 @@
                     android:layout_height="match_parent"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:padding="8dp">
+                    android:padding="8dp"
+                    android:alpha="0.6">
 
                     <ImageView
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:src="@drawable/ic_more_horiz_outline"
-                        android:tint="@color/ripple_primary" />
+                        android:tint="@color/clean_text_secondary" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
                         android:text="More"
-                        android:textColor="@color/clean_text_primary"
+                        android:textColor="@color/clean_text_secondary"
                         android:textSize="14sp"
                         android:textStyle="bold"
                         android:fontFamily="sans-serif" />
 
                 </LinearLayout>
+
+                <!-- Coming Soon Badge -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top|end"
+                    android:layout_margin="8dp"
+                    android:background="@drawable/bg_coming_soon_badge"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="4dp"
+                    android:text="Coming Soon"
+                    android:textColor="@color/coming_soon_text"
+                    android:textSize="10sp"
+                    android:fontFamily="sans-serif-medium" />
 
             </androidx.cardview.widget.CardView>
 

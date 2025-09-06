@@ -98,4 +98,9 @@
     <color name="clean_text_secondary">#6D6D70</color>
     <color name="clean_text_tertiary">#C7C7CC</color>
     <color name="clean_divider">#E5E5EA</color>
+    
+    <!-- Coming Soon Badge -->
+    <color name="coming_soon_background">#F5F5F7</color>
+    <color name="coming_soon_border">#E5E5EA</color>
+    <color name="coming_soon_text">#8E8E93</color>
 </resources>

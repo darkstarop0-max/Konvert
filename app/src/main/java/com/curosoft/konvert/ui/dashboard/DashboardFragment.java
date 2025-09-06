@@ -72,12 +72,53 @@ public class DashboardFragment extends Fragment {
     }
     
     private void setupConversionButtons() {
+        // Active conversion buttons
         btnDocuments.setOnClickListener(v -> openConversionBottomSheet("docs"));
         btnImages.setOnClickListener(v -> openConversionBottomSheet("images"));
-        btnAudio.setOnClickListener(v -> openConversionBottomSheet("audio"));
-        btnVideo.setOnClickListener(v -> openConversionBottomSheet("video"));
-        btnFiles.setOnClickListener(v -> openConversionBottomSheet("archives"));
-        btnMore.setOnClickListener(v -> openConversionBottomSheet("more"));
+        
+        // Coming Soon buttons with feedback
+        btnAudio.setOnClickListener(v -> showComingSoonMessage("Audio"));
+        btnVideo.setOnClickListener(v -> showComingSoonMessage("Video"));
+        btnFiles.setOnClickListener(v -> showComingSoonMessage("Files"));
+        btnMore.setOnClickListener(v -> showComingSoonMessage("More"));
+        
+        // Apply visual styling to coming soon buttons
+        setupComingSoonStyling();
+    }
+    
+    private void setupComingSoonStyling() {
+        // Re-enable clicks for animation feedback but don't navigate
+        btnAudio.setClickable(true);
+        btnVideo.setClickable(true);
+        btnFiles.setClickable(true);
+        btnMore.setClickable(true);
+        
+        // Add subtle scale animation on tap
+        setupButtonAnimation(btnAudio);
+        setupButtonAnimation(btnVideo);
+        setupButtonAnimation(btnFiles);
+        setupButtonAnimation(btnMore);
+    }
+    
+    private void setupButtonAnimation(android.view.View button) {
+        button.setOnTouchListener((v, event) -> {
+            switch (event.getAction()) {
+                case android.view.MotionEvent.ACTION_DOWN:
+                    v.animate().scaleX(0.95f).scaleY(0.95f).setDuration(100).start();
+                    break;
+                case android.view.MotionEvent.ACTION_UP:
+                case android.view.MotionEvent.ACTION_CANCEL:
+                    v.animate().scaleX(1.0f).scaleY(1.0f).setDuration(100).start();
+                    break;
+            }
+            return false; // Let the click listener handle the actual click
+        });
+    }
+    
+    private void showComingSoonMessage(String featureName) {
+        android.widget.Toast.makeText(getContext(), 
+            featureName + " conversion is coming soon!", 
+            android.widget.Toast.LENGTH_SHORT).show();
     }
     
     private void openConversionBottomSheet(String category) {
