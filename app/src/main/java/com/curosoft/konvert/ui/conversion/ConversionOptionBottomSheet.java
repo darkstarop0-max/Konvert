@@ -114,7 +114,25 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
             if (bottomSheet != null) {
                 BottomSheetBehavior<FrameLayout> behavior = BottomSheetBehavior.from(bottomSheet);
                 behavior.setSkipCollapsed(true);
-                behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                behavior.setPeekHeight(BottomSheetBehavior.PEEK_HEIGHT_AUTO);
+                behavior.setHideable(true);
+                behavior.setDraggable(true);
+                
+                // Set to expanded state after a brief delay to ensure smooth animation
+                bottomSheet.post(() -> behavior.setState(BottomSheetBehavior.STATE_EXPANDED));
+                
+                // Add smooth animation
+                behavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+                    @Override
+                    public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                        // Handle state changes for smooth animations
+                    }
+
+                    @Override
+                    public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                        // Handle slide animations if needed
+                    }
+                });
             }
         });
         return dialog;
@@ -287,9 +305,21 @@ public class ConversionOptionBottomSheet extends BottomSheetDialogFragment {
             fileNameText.setText(fileName);
             fileNameText.setVisibility(View.VISIBLE);
             btnSelectFile.setText(R.string.change_file);
+            
+            // Update the file display card to show selected state
+            View fileDisplayCard = getView().findViewById(R.id.file_selection_card);
+            if (fileDisplayCard != null) {
+                fileDisplayCard.setBackground(getResources().getDrawable(R.drawable.bg_file_display));
+            }
         } else {
             fileNameText.setVisibility(View.GONE);
             btnSelectFile.setText(R.string.select_file);
+            
+            // Reset the file display card to default state
+            View fileDisplayCard = getView().findViewById(R.id.file_selection_card);
+            if (fileDisplayCard != null) {
+                fileDisplayCard.setBackground(getResources().getDrawable(R.drawable.bg_file_display));
+            }
         }
     }
     

@@ -6,7 +6,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.curosoft.konvert.R;
@@ -51,12 +51,14 @@ public class FormatAdapter extends RecyclerView.Adapter<FormatAdapter.FormatView
     
     class FormatViewHolder extends RecyclerView.ViewHolder {
         private final TextView formatText;
-        private final ConstraintLayout container;
+        private final CardView container;
+        private final View selectionIndicator;
         
         public FormatViewHolder(@NonNull View itemView) {
             super(itemView);
             formatText = itemView.findViewById(R.id.format_text);
             container = itemView.findViewById(R.id.format_container);
+            selectionIndicator = itemView.findViewById(R.id.selection_indicator);
             
             itemView.setOnClickListener(v -> {
                 int position = getAdapterPosition();
@@ -81,12 +83,15 @@ public class FormatAdapter extends RecyclerView.Adapter<FormatAdapter.FormatView
         public void bind(String format, boolean isSelected) {
             formatText.setText(format);
             
-            // Update the UI based on selection state
+            // Update the selection indicator
+            selectionIndicator.setSelected(isSelected);
+            
+            // Update card appearance
             if (isSelected) {
-                container.setBackgroundResource(R.drawable.bg_format_selected);
-                formatText.setTextColor(itemView.getContext().getResources().getColor(R.color.text_on_primary));
+                container.setCardBackgroundColor(itemView.getContext().getResources().getColor(R.color.primary));
+                formatText.setTextColor(itemView.getContext().getResources().getColor(android.R.color.white));
             } else {
-                container.setBackgroundResource(R.drawable.bg_format_normal);
+                container.setCardBackgroundColor(itemView.getContext().getResources().getColor(R.color.card_background));
                 formatText.setTextColor(itemView.getContext().getResources().getColor(R.color.text_primary));
             }
         }
