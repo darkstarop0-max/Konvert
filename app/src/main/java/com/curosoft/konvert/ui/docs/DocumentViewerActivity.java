@@ -5,6 +5,7 @@ import android.graphics.pdf.PdfRenderer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
@@ -226,16 +227,12 @@ public class DocumentViewerActivity extends AppCompatActivity {
             public void onStopTrackingTouch(SeekBar seekBar) {}
         });
         
-        // PDF zoom slider
+        // PDF zoom slider - Remove functionality as PhotoView handles zoom internally
+        // Keep the slider hidden for PDF documents
         pdfZoomSlider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (fromUser) {
-                    currentZoom = 0.5f + (progress * 0.1f); // Range 0.5-3.0
-                    if (pdfAdapter != null) {
-                        pdfAdapter.setZoomLevel(currentZoom);
-                    }
-                }
+                // No longer needed - PhotoView handles zoom
             }
             
             @Override
@@ -264,6 +261,7 @@ public class DocumentViewerActivity extends AppCompatActivity {
     }
     
     private void setupPinchToZoom() {
+        // Enhanced pinch-to-zoom for text content
         scaleGestureDetector = new ScaleGestureDetector(this, new ScaleGestureDetector.SimpleOnScaleGestureListener() {
             @Override
             public boolean onScale(ScaleGestureDetector detector) {
@@ -271,7 +269,7 @@ public class DocumentViewerActivity extends AppCompatActivity {
                     textScaleFactor *= detector.getScaleFactor();
                     textScaleFactor = Math.max(MIN_SCALE, Math.min(textScaleFactor, MAX_SCALE));
                     
-                    // Apply scale to text size
+                    // Apply scale to text size smoothly
                     float newTextSize = currentTextSize * textScaleFactor;
                     documentContent.setTextSize(newTextSize);
                     
@@ -283,43 +281,26 @@ public class DocumentViewerActivity extends AppCompatActivity {
                 }
                 return false;
             }
+            
+            @Override
+            public boolean onScaleBegin(ScaleGestureDetector detector) {
+                return "txt".equals(documentType);
+            }
         });
         
         // Set touch listener on text container for pinch-to-zoom
         textContainer.setOnTouchListener((v, event) -> {
             if ("txt".equals(documentType)) {
-                scaleGestureDetector.onTouchEvent(event);
-                return true;
+                return scaleGestureDetector.onTouchEvent(event);
             }
             return false;
         });
         
-        // Setup pinch-to-zoom for PDF RecyclerView
-        ScaleGestureDetector pdfScaleDetector = new ScaleGestureDetector(this, new ScaleGestureDetector.SimpleOnScaleGestureListener() {
-            @Override
-            public boolean onScale(ScaleGestureDetector detector) {
-                if ("pdf".equals(documentType) && pdfAdapter != null) {
-                    currentZoom *= detector.getScaleFactor();
-                    currentZoom = Math.max(0.5f, Math.min(currentZoom, 3.0f));
-                    
-                    pdfAdapter.setZoomLevel(currentZoom);
-                    
-                    // Update zoom slider
-                    int sliderProgress = (int)((currentZoom - 0.5f) * 10); // Convert 0.5-3.0 to 0-25
-                    pdfZoomSlider.setProgress(sliderProgress);
-                    
-                    return true;
-                }
-                return false;
-            }
-        });
-        
-        pdfPagesRecyclerView.setOnTouchListener((v, event) -> {
-            if ("pdf".equals(documentType)) {
-                pdfScaleDetector.onTouchEvent(event);
-            }
-            return false; // Let RecyclerView handle scrolling
-        });
+        // For PDF: PhotoView handles zoom internally, no need for custom implementation
+        // For DOCX: Enable built-in WebView zoom
+        docxWebView.getSettings().setBuiltInZoomControls(true);
+        docxWebView.getSettings().setDisplayZoomControls(false); // Hide zoom controls UI
+        docxWebView.getSettings().setSupportZoom(true);
     }
     
     private void determineDocumentTypeAndDisplay() {
@@ -349,13 +330,10 @@ public class DocumentViewerActivity extends AppCompatActivity {
         hideAllViews();
         findViewById(R.id.pdfContainer).setVisibility(View.VISIBLE);
         
-        // Show PDF controls
-        pdfZoomControls.setVisibility(View.VISIBLE);
+        // Show only page navigation controls for PDF (zoom handled by PhotoView)
+        pdfZoomControls.setVisibility(View.GONE); // Hide zoom controls
         pageNavigationControls.setVisibility(View.VISIBLE);
         textSizeControls.setVisibility(View.GONE);
-        
-        // Reset zoom level for new document
-        currentZoom = 1.0f;
         
         try {
             ParcelFileDescriptor fd = getContentResolver().openFileDescriptor(fileUri, "r");
@@ -594,9 +572,25 @@ public class DocumentViewerActivity extends AppCompatActivity {
     }
     
     @Override
+    protected void onPause() {
+        super.onPause();
+        if (docxWebView != null) {
+            docxWebView.onPause();
+        }
+    }
+    
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (docxWebView != null) {
+            docxWebView.onResume();
+        }
+    }
+    
+    @Override
     protected void onDestroy() {
-        super.onDestroy();
         cleanup();
+        super.onDestroy();
     }
     
     private void cleanup() {
@@ -613,7 +607,20 @@ public class DocumentViewerActivity extends AppCompatActivity {
         }
         
         if (docxWebView != null) {
-            docxWebView.destroy();
+            try {
+                // Proper WebView cleanup to prevent renderer crashes
+                docxWebView.stopLoading();
+                docxWebView.clearCache(true);
+                docxWebView.clearHistory();
+                docxWebView.loadUrl("about:blank");
+                docxWebView.onPause();
+                docxWebView.removeAllViews();
+                docxWebView.destroyDrawingCache();
+                docxWebView.destroy();
+                docxWebView = null;
+            } catch (Exception e) {
+                Log.e("DocumentViewer", "Error cleaning up WebView", e);
+            }
         }
     }
 }

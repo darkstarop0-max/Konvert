@@ -15,6 +15,7 @@ public class SettingsManager {
     
     private static final String PREFS_NAME = "konvert_settings";
     private static final String PREF_SAVE_LOCATION = "save_location";
+    private static final String PREF_CUSTOM_LOCATION_DISPLAY = "custom_location_display";
     private static final String PREF_VIEWER_MODE = "viewer_mode";
     private static final String PREF_FONT_SIZE = "font_size";
     private static final String PREF_DARK_MODE = "dark_mode";
@@ -57,6 +58,47 @@ public class SettingsManager {
      */
     public void setSaveLocation(String location) {
         prefs.edit().putString(PREF_SAVE_LOCATION, location).apply();
+    }
+    
+    /**
+     * Set the display name for custom save location
+     */
+    public void setCustomSaveLocationDisplay(String displayName) {
+        prefs.edit().putString(PREF_CUSTOM_LOCATION_DISPLAY, displayName).apply();
+    }
+    
+    /**
+     * Get the display name for custom save location
+     */
+    public String getCustomSaveLocationDisplay() {
+        return prefs.getString(PREF_CUSTOM_LOCATION_DISPLAY, "Custom Location");
+    }
+    
+    /**
+     * Check if current save location is a custom URI
+     */
+    public boolean isCustomSaveLocation() {
+        String location = getSaveLocation();
+        return location.startsWith("content://");
+    }
+    
+    /**
+     * Get display-friendly save location
+     */
+    public String getSaveLocationDisplay() {
+        if (isCustomSaveLocation()) {
+            return getCustomSaveLocationDisplay();
+        }
+        
+        String location = getSaveLocation();
+        if (location.contains("Documents")) {
+            return "Documents/Konvert";
+        } else if (location.contains("Downloads")) {
+            return "Downloads";
+        } else if (location.contains("Pictures")) {
+            return "Pictures/Konvert";
+        }
+        return location;
     }
     
     /**

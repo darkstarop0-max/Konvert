@@ -108,8 +108,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
-                    android:thumbTint="@color/clean_text_primary"
-                    android:trackTint="@color/clean_text_tertiary" />
+                    android:thumb="@drawable/switch_thumb_selector"
+                    android:track="@drawable/switch_track_selector" />
 
             </LinearLayout>
 

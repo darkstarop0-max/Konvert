@@ -6,10 +6,10 @@ import android.os.ParcelFileDescriptor;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.curosoft.konvert.R;
+import com.github.chrisbanes.photoview.PhotoView;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,9 +18,9 @@ public class PdfPageAdapter extends RecyclerView.Adapter<PdfPageAdapter.PageView
     
     private PdfRenderer pdfRenderer;
     private List<Bitmap> pages;
-    private float zoomLevel = 1.0f;
     private int pageWidth = 595; // Default A4 width in points
     private int pageHeight = 842; // Default A4 height in points
+    private static final float BITMAP_SCALE = 2.0f; // High resolution rendering
     
     public PdfPageAdapter() {
         pages = new ArrayList<>();
@@ -31,6 +31,16 @@ public class PdfPageAdapter extends RecyclerView.Adapter<PdfPageAdapter.PageView
         this.pages.clear();
         
         if (renderer != null) {
+            // Get actual page dimensions from the first page
+            try {
+                PdfRenderer.Page firstPage = renderer.openPage(0);
+                pageWidth = firstPage.getWidth();
+                pageHeight = firstPage.getHeight();
+                firstPage.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            
             // Pre-render all pages for smooth scrolling
             for (int i = 0; i < renderer.getPageCount(); i++) {
                 pages.add(null); // Placeholder for lazy loading
@@ -39,14 +49,7 @@ public class PdfPageAdapter extends RecyclerView.Adapter<PdfPageAdapter.PageView
         }
     }
     
-    public void setZoomLevel(float zoomLevel) {
-        this.zoomLevel = zoomLevel;
-        // Clear cached pages to force re-render at new zoom
-        for (int i = 0; i < pages.size(); i++) {
-            pages.set(i, null);
-        }
-        notifyDataSetChanged();
-    }
+    // Remove setZoomLevel as PhotoView handles zoom internally
     
     @NonNull
     @Override
@@ -85,9 +88,9 @@ public class PdfPageAdapter extends RecyclerView.Adapter<PdfPageAdapter.PageView
         try {
             PdfRenderer.Page page = pdfRenderer.openPage(pageIndex);
             
-            // Calculate dimensions based on zoom level
-            int width = (int) (pageWidth * zoomLevel * 2); // 2x for high DPI
-            int height = (int) (pageHeight * zoomLevel * 2);
+            // Render at high resolution for crisp zoom
+            int width = (int) (page.getWidth() * BITMAP_SCALE);
+            int height = (int) (page.getHeight() * BITMAP_SCALE);
             
             Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
             bitmap.eraseColor(0xFFFFFFFF); // White background
@@ -128,11 +131,17 @@ public class PdfPageAdapter extends RecyclerView.Adapter<PdfPageAdapter.PageView
     }
     
     static class PageViewHolder extends RecyclerView.ViewHolder {
-        ImageView pageImageView;
+        PhotoView pageImageView;
         
         PageViewHolder(View itemView) {
             super(itemView);
             pageImageView = itemView.findViewById(R.id.pageImageView);
+            
+            // Configure PhotoView for better zoom experience
+            pageImageView.setMaximumScale(5.0f);
+            pageImageView.setMinimumScale(0.5f);
+            pageImageView.setMediumScale(2.0f);
+            pageImageView.setZoomable(true);
         }
     }
 }

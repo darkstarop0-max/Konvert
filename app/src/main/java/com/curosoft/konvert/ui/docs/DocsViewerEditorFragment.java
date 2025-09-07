@@ -1,16 +1,23 @@
 package com.curosoft.konvert.ui.docs;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
+import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -44,6 +51,41 @@ public class DocsViewerEditorFragment extends Fragment implements
     private List<File> allDocuments = new ArrayList<>();
     private DocumentSorter.SortBy currentSortBy = DocumentSorter.SortBy.NAME_ASC;
     
+    // Permission handling
+    private static final long SCAN_DEBOUNCE_DELAY = 5000; // 5 seconds
+    private long lastScanTime = 0;
+    private ActivityResultLauncher<String[]> permissionLauncher;
+    
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        
+        // Initialize permission launcher
+        permissionLauncher = registerForActivityResult(
+            new ActivityResultContracts.RequestMultiplePermissions(),
+            result -> {
+                boolean allGranted = true;
+                for (Boolean granted : result.values()) {
+                    if (!granted) {
+                        allGranted = false;
+                        break;
+                    }
+                }
+                
+                if (allGranted) {
+                    // Permissions granted, start scanning
+                    startDocumentScanning();
+                } else {
+                    // Some permissions denied, show limited functionality
+                    Toast.makeText(requireContext(), 
+                        "Storage permissions needed to scan all documents", 
+                        Toast.LENGTH_LONG).show();
+                    startDocumentScanning(); // Still try to scan accessible areas
+                }
+            }
+        );
+    }
+    
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_docs_viewer_editor, container, false);
@@ -57,7 +99,43 @@ public class DocsViewerEditorFragment extends Fragment implements
         setupRecyclerView();
         setupFileScanner();
         
-        // Start scanning for documents
+        // Check permissions and start scanning
+        checkPermissionsAndStartScanning();
+    }
+    
+    /**
+     * Check storage permissions and request if needed
+     */
+    private void checkPermissionsAndStartScanning() {
+        List<String> permissionsNeeded = new ArrayList<>();
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // Android 13+ requires granular media permissions
+            if (ContextCompat.checkSelfPermission(requireContext(), 
+                    "android.permission.READ_MEDIA_DOCUMENTS") != PackageManager.PERMISSION_GRANTED) {
+                permissionsNeeded.add("android.permission.READ_MEDIA_DOCUMENTS");
+            }
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            // Android 6+ requires READ_EXTERNAL_STORAGE
+            if (ContextCompat.checkSelfPermission(requireContext(), 
+                    Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                permissionsNeeded.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+            }
+        }
+        
+        if (!permissionsNeeded.isEmpty()) {
+            // Request permissions
+            permissionLauncher.launch(permissionsNeeded.toArray(new String[0]));
+        } else {
+            // Permissions already granted
+            startDocumentScanning();
+        }
+    }
+    
+    /**
+     * Start document scanning
+     */
+    private void startDocumentScanning() {
         showLoadingState();
         fileScanner.startScanning();
     }
@@ -124,6 +202,24 @@ public class DocsViewerEditorFragment extends Fragment implements
     @Override
     public void onFileRemoved(File file) {
         // File scanner will trigger onFilesChanged which updates the list
+    }
+    
+    @Override
+    public void onScanStarted() {
+        if (getActivity() != null) {
+            showLoadingState();
+        }
+    }
+    
+    @Override
+    public void onScanProgress(int current, int total) {
+        // Optional: Could show progress indicator here if needed
+        // For now, just keep showing loading state
+    }
+    
+    @Override
+    public void onScanCompleted() {
+        // Scanning completed, final results will come through onFilesChanged
     }
     
     // CleanDocumentAdapter.OnDocumentClickListener implementation
@@ -228,8 +324,10 @@ public class DocsViewerEditorFragment extends Fragment implements
     @Override
     public void onResume() {
         super.onResume();
-        // Refresh documents when returning to the fragment
-        if (fileScanner != null) {
+        // Refresh documents when returning to the fragment, but not too frequently
+        long currentTime = System.currentTimeMillis();
+        if (fileScanner != null && (currentTime - lastScanTime) > SCAN_DEBOUNCE_DELAY) {
+            lastScanTime = currentTime;
             fileScanner.scanForDocuments();
         }
     }

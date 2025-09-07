@@ -7,6 +7,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import androidx.appcompat.app.AlertDialog;
 
@@ -27,6 +29,11 @@ public class CustomDialogUtils {
     
     public interface OnSingleChoiceListener {
         void onChoice(DialogInterface dialog, int selectedIndex);
+    }
+    
+    public interface OnSaveLocationListener {
+        void onLocationSelected(String newLocation);
+        void onCustomLocationRequested();
     }
     
     /**
@@ -133,21 +140,60 @@ public class CustomDialogUtils {
      */
     public static void showSingleChoiceDialog(Context context, String title, String message, 
                                             String[] options, int selectedIndex, OnSingleChoiceListener listener) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle(title);
-        if (message != null && !message.isEmpty()) {
-            builder.setMessage(message);
+        Dialog dialog = new Dialog(context);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        
+        View view = LayoutInflater.from(context).inflate(R.layout.dialog_single_choice, null);
+        dialog.setContentView(view);
+        
+        // Make dialog background transparent so our custom background shows
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
         
-        builder.setSingleChoiceItems(options, selectedIndex, (dialog, which) -> {
-            if (listener != null) {
-                listener.onChoice(dialog, which);
+        TextView titleView = view.findViewById(R.id.dialog_title);
+        TextView messageView = view.findViewById(R.id.dialog_message);
+        RadioGroup radioGroup = view.findViewById(R.id.radio_group_options);
+        TextView cancelButton = view.findViewById(R.id.dialog_button_cancel);
+        TextView positiveButton = view.findViewById(R.id.dialog_button_positive);
+        
+        titleView.setText(title);
+        
+        if (message != null && !message.isEmpty()) {
+            messageView.setText(message);
+            messageView.setVisibility(View.VISIBLE);
+        }
+        
+        // Add radio buttons for each option
+        for (int i = 0; i < options.length; i++) {
+            RadioButton radioButton = new RadioButton(context);
+            radioButton.setText(options[i]);
+            radioButton.setTextSize(16);
+            radioButton.setTextColor(context.getResources().getColor(R.color.text_primary, null));
+            android.content.res.ColorStateList colorStateList = context.getResources().getColorStateList(R.color.clean_accent, null);
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                radioButton.setButtonTintList(colorStateList);
             }
+            radioButton.setPadding(0, 16, 0, 16);
+            radioButton.setId(i);
+            
+            if (i == selectedIndex) {
+                radioButton.setChecked(true);
+            }
+            
+            radioGroup.addView(radioButton);
+        }
+        
+        cancelButton.setOnClickListener(v -> dialog.dismiss());
+        
+        positiveButton.setOnClickListener(v -> {
+            int checkedId = radioGroup.getCheckedRadioButtonId();
+            if (checkedId != -1 && listener != null) {
+                listener.onChoice(null, checkedId);
+            }
+            dialog.dismiss();
         });
         
-        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
-        
-        AlertDialog dialog = builder.create();
         dialog.show();
     }
     
@@ -156,18 +202,99 @@ public class CustomDialogUtils {
      */
     public static void showInfoDialog(Context context, String title, String message, 
                                     String buttonText, Runnable onButtonClick) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle(title);
-        builder.setMessage(message);
+        Dialog dialog = new Dialog(context);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         
-        builder.setPositiveButton(buttonText, (dialog, which) -> {
+        View view = LayoutInflater.from(context).inflate(R.layout.dialog_info, null);
+        dialog.setContentView(view);
+        
+        // Make dialog background transparent so our custom background shows
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+        
+        TextView titleView = view.findViewById(R.id.dialog_title);
+        TextView messageView = view.findViewById(R.id.dialog_message);
+        TextView positiveButton = view.findViewById(R.id.dialog_button_positive);
+        
+        titleView.setText(title);
+        messageView.setText(message);
+        positiveButton.setText(buttonText);
+        
+        positiveButton.setOnClickListener(v -> {
             if (onButtonClick != null) {
                 onButtonClick.run();
             }
             dialog.dismiss();
         });
         
-        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+    
+    /**
+     * Show custom save location dialog
+     */
+    public static void showSaveLocationDialog(Context context, String currentLocation, OnSaveLocationListener listener) {
+        Dialog dialog = new Dialog(context);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        
+        View view = LayoutInflater.from(context).inflate(R.layout.dialog_save_location, null);
+        dialog.setContentView(view);
+        
+        // Make dialog background transparent so our custom background shows
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+        
+        TextView titleView = view.findViewById(R.id.dialog_title);
+        TextView currentLocationText = view.findViewById(R.id.dialog_current_location);
+        RadioGroup radioGroup = view.findViewById(R.id.radio_group_locations);
+        RadioButton radioDocuments = view.findViewById(R.id.radio_documents);
+        RadioButton radioDownloads = view.findViewById(R.id.radio_downloads);
+        RadioButton radioPictures = view.findViewById(R.id.radio_pictures);
+        RadioButton radioCustom = view.findViewById(R.id.radio_custom);
+        TextView cancelButton = view.findViewById(R.id.dialog_button_cancel);
+        TextView positiveButton = view.findViewById(R.id.dialog_button_positive);
+        
+        currentLocationText.setText("Current: " + currentLocation);
+        
+        // Set default selection based on current location
+        if (currentLocation.contains("Documents")) {
+            radioDocuments.setChecked(true);
+        } else if (currentLocation.contains("Downloads")) {
+            radioDownloads.setChecked(true);
+        } else if (currentLocation.contains("Pictures")) {
+            radioPictures.setChecked(true);
+        } else {
+            radioCustom.setChecked(true);
+        }
+        
+        cancelButton.setOnClickListener(v -> dialog.dismiss());
+        
+        positiveButton.setOnClickListener(v -> {
+            int selectedId = radioGroup.getCheckedRadioButtonId();
+            String newLocation;
+            
+            if (selectedId == R.id.radio_documents) {
+                newLocation = android.os.Environment.getExternalStoragePublicDirectory(
+                        android.os.Environment.DIRECTORY_DOCUMENTS).getAbsolutePath() + "/Konvert";
+            } else if (selectedId == R.id.radio_downloads) {
+                newLocation = android.os.Environment.getExternalStoragePublicDirectory(
+                        android.os.Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
+            } else if (selectedId == R.id.radio_pictures) {
+                newLocation = android.os.Environment.getExternalStoragePublicDirectory(
+                        android.os.Environment.DIRECTORY_PICTURES).getAbsolutePath() + "/Konvert";
+            } else {
+                // Custom location - call the custom location picker
+                listener.onCustomLocationRequested();
+                dialog.dismiss();
+                return;
+            }
+            
+            listener.onLocationSelected(newLocation);
+            dialog.dismiss();
+        });
+        
         dialog.show();
     }
     

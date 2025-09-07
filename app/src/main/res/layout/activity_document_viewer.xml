@@ -121,10 +121,13 @@
             android:layout_height="wrap_content"
             android:src="@drawable/ic_share_24"
             android:contentDescription="Share document"
-            app:backgroundTint="@color/floating_button_background"
-            app:tint="@color/floating_button_icon"
-            app:elevation="8dp"
-            app:fabSize="normal" />
+            app:backgroundTint="@color/clean_accent"
+            app:tint="@android:color/white"
+            app:elevation="6dp"
+            app:pressedTranslationZ="8dp"
+            app:borderWidth="0dp"
+            app:fabSize="normal"
+            app:rippleColor="@color/ripple_primary" />
 
     </LinearLayout>
 

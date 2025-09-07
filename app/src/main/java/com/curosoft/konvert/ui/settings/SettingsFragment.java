@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.DocumentsContract;
 import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +15,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -27,6 +30,9 @@ import com.curosoft.konvert.utils.SettingsManager;
 public class SettingsFragment extends Fragment {
 
     private SettingsManager settingsManager;
+    
+    // Activity Result Launchers
+    private ActivityResultLauncher<Uri> directoryPickerLauncher;
     
     // UI Components
     private SwitchCompat darkModeSwitch;
@@ -43,6 +49,12 @@ public class SettingsFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         settingsManager = new SettingsManager(requireContext());
+        
+        // Initialize directory picker launcher
+        directoryPickerLauncher = registerForActivityResult(
+            new ActivityResultContracts.OpenDocumentTree(),
+            this::handleDirectoryPickerResult
+        );
     }
 
     @Override
@@ -118,12 +130,7 @@ public class SettingsFragment extends Fragment {
     }
 
     private void updateSaveLocationDisplay() {
-        String location = settingsManager.getSaveLocation();
-        // Show just the folder name for cleaner display
-        String displayLocation = location.substring(location.lastIndexOf('/') + 1);
-        if (displayLocation.isEmpty()) {
-            displayLocation = "Documents/Konvert";
-        }
+        String displayLocation = settingsManager.getSaveLocationDisplay();
         currentLocationText.setText(displayLocation);
     }
 
@@ -136,64 +143,24 @@ public class SettingsFragment extends Fragment {
     }
 
     private void showSaveLocationDialog() {
-        String currentLocation = settingsManager.getSaveLocation();
-        String message = "Current location:\n" + currentLocation + 
-                        "\n\nChoose where to save converted files:";
+        String currentLocation = settingsManager.getSaveLocationDisplay();
         
-        String[] options = {
-            "Documents/Konvert", 
-            "Downloads", 
-            "Pictures", 
-            "Custom Location"
-        };
-        
-        CustomDialogUtils.showSingleChoiceDialog(
+        CustomDialogUtils.showSaveLocationDialog(
             requireContext(),
-            "Save Location",
-            message,
-            options,
-            0, // Default selection
-            (dialog, selectedIndex) -> {
-                String newLocation;
-                switch (selectedIndex) {
-                    case 0:
-                        newLocation = Environment.getExternalStoragePublicDirectory(
-                                Environment.DIRECTORY_DOCUMENTS).getAbsolutePath() + "/Konvert";
-                        break;
-                    case 1:
-                        newLocation = Environment.getExternalStoragePublicDirectory(
-                                Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
-                        break;
-                    case 2:
-                        newLocation = Environment.getExternalStoragePublicDirectory(
-                                Environment.DIRECTORY_PICTURES).getAbsolutePath() + "/Konvert";
-                        break;
-                    case 3:
-                        // Show custom location picker dialog
-                        showCustomLocationPicker();
-                        return;
-                    default:
-                        return;
+            currentLocation,
+            new CustomDialogUtils.OnSaveLocationListener() {
+                @Override
+                public void onLocationSelected(String newLocation) {
+                    settingsManager.setSaveLocation(newLocation);
+                    updateSaveLocationDisplay();
+                    Toast.makeText(getContext(), "Save location updated", Toast.LENGTH_SHORT).show();
                 }
                 
-                settingsManager.setSaveLocation(newLocation);
-                updateSaveLocationDisplay();
-                Toast.makeText(getContext(), "Save location updated", Toast.LENGTH_SHORT).show();
-                dialog.dismiss();
+                @Override
+                public void onCustomLocationRequested() {
+                    openCustomLocationPicker();
+                }
             }
-        );
-    }
-
-    private void showCustomLocationPicker() {
-        String message = "Custom folder picker will allow you to choose any folder on your device.\n\n" +
-                        "This feature is coming in the next update!";
-        
-        CustomDialogUtils.showInfoDialog(
-            requireContext(),
-            "Custom Location",
-            message,
-            "Got it",
-            null
         );
     }
 
@@ -255,5 +222,51 @@ public class SettingsFragment extends Fragment {
             requireContext().getPackageName());
         
         startActivity(Intent.createChooser(intent, "Share Konvert"));
+    }
+    
+    private void handleDirectoryPickerResult(Uri uri) {
+        if (uri != null) {
+            try {
+                // Take persistable permission
+                requireContext().getContentResolver().takePersistableUriPermission(
+                    uri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                
+                // Convert URI to readable path for display
+                String displayPath = getDisplayPathFromUri(uri);
+                
+                // Save the URI as custom location
+                settingsManager.setSaveLocation(uri.toString());
+                settingsManager.setCustomSaveLocationDisplay(displayPath);
+                
+                updateSaveLocationDisplay();
+                Toast.makeText(getContext(), "Custom save location set: " + displayPath, Toast.LENGTH_SHORT).show();
+                
+            } catch (Exception e) {
+                Toast.makeText(getContext(), "Error setting save location: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+    
+    private String getDisplayPathFromUri(Uri uri) {
+        String path = uri.getPath();
+        if (path != null) {
+            // Clean up the path for display
+            if (path.startsWith("/tree/")) {
+                path = path.substring(6); // Remove "/tree/"
+            }
+            if (path.contains(":")) {
+                String[] parts = path.split(":");
+                if (parts.length > 1) {
+                    return parts[parts.length - 1]; // Get the last part after ":"
+                }
+            }
+            return path;
+        }
+        return "Custom Location";
+    }
+    
+    public void openCustomLocationPicker() {
+        // Launch the directory picker
+        directoryPickerLauncher.launch(null);
     }
 }
