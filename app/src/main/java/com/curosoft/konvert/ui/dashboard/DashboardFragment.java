@@ -22,6 +22,9 @@ import com.curosoft.konvert.ui.conversion.ConversionOptionBottomSheet;
 import com.curosoft.konvert.ui.dashboard.adapters.RecentFileAdapter;
 import com.curosoft.konvert.ui.dashboard.models.RecentFile;
 import com.curosoft.konvert.ui.docs.DocumentViewerActivity;
+import com.curosoft.konvert.utils.ExternalFileOpener;
+
+import java.io.File;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -155,29 +158,43 @@ public class DashboardFragment extends Fragment {
     }
     
     private void openRecentFile(RecentFile recentFile) {
-        // Open the file in DocumentViewerActivity
-        if (recentFile.getFilePath() != null) {
-            Intent intent = new Intent(getContext(), DocumentViewerActivity.class);
-            try {
-                // Convert file path to URI using FileProvider
-                File file = new File(recentFile.getFilePath());
-                Uri fileUri = FileProvider.getUriForFile(
-                    getContext(),
-                    getContext().getPackageName() + ".provider",
-                    file
-                );
-                intent.setData(fileUri);
-                intent.putExtra("fileName", recentFile.getFileName());
-                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                startActivity(intent);
-            } catch (Exception e) {
-                // Fallback to regular file URI if FileProvider fails
-                File file = new File(recentFile.getFilePath());
-                Uri fileUri = Uri.fromFile(file);
-                intent.setData(fileUri);
-                intent.putExtra("fileName", recentFile.getFileName());
-                startActivity(intent);
-            }
+        if (recentFile.getFilePath() == null) {
+            return;
+        }
+        
+        // Try to open file with external app if not supported internally
+        boolean handledExternally = ExternalFileOpener.openFileIfNotSupported(
+            getContext(), 
+            recentFile.getFilePath(), 
+            recentFile.getFileName()
+        );
+        
+        // If file was handled externally, we're done
+        if (handledExternally) {
+            return;
+        }
+        
+        // File is supported internally, open in DocumentViewerActivity
+        Intent intent = new Intent(getContext(), DocumentViewerActivity.class);
+        try {
+            // Convert file path to URI using FileProvider
+            File file = new File(recentFile.getFilePath());
+            Uri fileUri = FileProvider.getUriForFile(
+                getContext(),
+                getContext().getPackageName() + ".provider",
+                file
+            );
+            intent.setData(fileUri);
+            intent.putExtra("fileName", recentFile.getFileName());
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            startActivity(intent);
+        } catch (Exception e) {
+            // Fallback to regular file URI if FileProvider fails
+            File file = new File(recentFile.getFilePath());
+            Uri fileUri = Uri.fromFile(file);
+            intent.setData(fileUri);
+            intent.putExtra("fileName", recentFile.getFileName());
+            startActivity(intent);
         }
     }
     

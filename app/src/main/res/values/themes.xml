@@ -1,10 +1,20 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme - Apple-inspired -->
-    <style name="Theme.Konvert" parent="Theme.AppCompat.Light.NoActionBar">
-        <!-- Color attributes -->
+    <!-- Base application theme - Apple-inspired with MaterialComponents support -->
+    <style name="Theme.Konvert" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Color attributes - Your existing custom colors preserved -->
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
+        
+        <!-- Material Design 3 color attributes for compatibility -->
+        <item name="colorPrimaryVariant">@color/primary_dark</item>
+        <item name="colorOnPrimary">@color/text_on_primary</item>
+        <item name="colorSecondary">@color/accent</item>
+        <item name="colorOnSecondary">@color/text_on_primary</item>
+        <item name="colorSurface">@color/clean_background</item>
+        <item name="colorOnSurface">@color/clean_text_primary</item>
+        
+        <!-- Background colors - Your existing setup -->
         <item name="android:colorBackground">@color/background</item>
         <item name="android:windowBackground">@color/background</item>
         <item name="android:textColorPrimary">@color/text_primary</item>

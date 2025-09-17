@@ -22,8 +22,8 @@
     <View
         android:id="@+id/statusBarGradient"
         android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:background="@drawable/gradient_status_bar"
+        android:layout_height="50dp"
+        android:background="@drawable/bg_bottom_section"
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.viewpager2.widget.ViewPager2
@@ -46,9 +46,10 @@
         android:layout_marginEnd="24dp"
         android:background="@drawable/bg_skip_button"
         android:paddingHorizontal="16dp"
-        android:paddingVertical="8dp"
+        android:paddingVertical="4dp"
         android:text="@string/skip"
-        android:textColor="@color/text_secondary"
+        android:textStyle="bold"
+        android:textColor="@color/neo_light"
         android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/statusBarSpacer" />
@@ -59,9 +60,9 @@
         android:layout_height="wrap_content"
         android:background="@drawable/bg_bottom_section"
         android:elevation="8dp"
-        android:paddingHorizontal="24dp"
-        android:paddingTop="32dp"
-        android:paddingBottom="40dp"
+        android:paddingHorizontal="9dp"
+        android:paddingTop="5dp"
+        android:paddingBottom="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">

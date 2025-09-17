@@ -6,11 +6,31 @@
     android:orientation="vertical"
     android:background="@color/clean_background">
 
+    <!-- Progress Indicator -->
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/topProgressIndicator"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:indicatorColor="@color/ripple_primary"
+        app:trackThickness="2dp" />
+
     <!-- Main Content Area -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="16dp">
+
+        <!-- Progress Indicator -->
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/progressIndicator"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:visibility="gone"
+            app:indicatorColor="@color/ripple_primary"
+            app:trackColor="@color/clean_divider"
+            android:indeterminate="true" />
 
         <!-- Documents RecyclerView -->
         <androidx.recyclerview.widget.RecyclerView
@@ -53,11 +73,37 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Documents you convert will appear here"
+                android:text="Add documents to get started"
                 android:textSize="16sp"
                 android:textColor="@color/clean_text_secondary"
                 android:fontFamily="sans-serif"
-                android:gravity="center" />
+                android:gravity="center"
+                android:layout_marginBottom="24dp" />
+
+            <!-- Action Buttons with MaterialComponents Theme Overlay -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:theme="@style/ThemeOverlay.Konvert.MaterialButton">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/addDocumentButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Add Document"
+                    android:layout_marginBottom="12dp"
+                    style="@style/Widget.Konvert.MaterialButton" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/chooseFolderButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Choose Folder"
+                    style="@style/Widget.Konvert.MaterialButton.Outlined" />
+
+            </LinearLayout>
 
         </LinearLayout>
 

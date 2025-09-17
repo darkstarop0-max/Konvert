@@ -118,4 +118,8 @@
     <color name="coming_soon_background">#F5F5F7</color>
     <color name="coming_soon_border">#E5E5EA</color>
     <color name="coming_soon_text">#8E8E93</color>
+    
+    <!-- Icon Colors -->
+    <color name="icon_primary">#007AFF</color>
+    <color name="icon_secondary">#8E8E93</color>
 </resources>

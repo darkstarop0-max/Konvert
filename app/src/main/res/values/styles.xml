@@ -215,4 +215,11 @@
         <item name="cornerSizeBottomRight">0dp</item>
         <item name="cornerSizeBottomLeft">0dp</item>
     </style>
+    
+    <!-- Switch Theme for Settings -->
+    <style name="SwitchTheme" parent="Widget.AppCompat.CompoundButton.Switch">
+        <item name="colorControlActivated">@color/primary</item>
+        <item name="colorSwitchThumbNormal">@color/clean_text_tertiary</item>
+        <item name="android:colorForeground">@color/clean_text_secondary</item>
+    </style>
 </resources>

@@ -26,6 +26,8 @@
         android:layout_marginStart="@dimen/onboarding_content_padding"
         android:layout_marginEnd="@dimen/onboarding_content_padding"
         android:gravity="center"
+        android:fontFamily="monospace"
+        android:textStyle="bold"
         android:text="@string/onboarding_title_3"
         app:layout_constraintBottom_toTopOf="@+id/textView6"
         app:layout_constraintEnd_toEndOf="parent"
@@ -62,36 +64,36 @@
         app:layout_constraintTop_toBottomOf="@+id/textView6">
 
         <ImageView
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
             android:layout_margin="8dp"
             android:contentDescription="Image format"
             android:src="@drawable/ic_image_format" />
 
         <ImageView
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
             android:layout_margin="8dp"
             android:contentDescription="Document format"
             android:src="@drawable/ic_document_format" />
 
         <ImageView
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
             android:layout_margin="8dp"
             android:contentDescription="Audio format"
             android:src="@drawable/ic_audio_format" />
 
         <ImageView
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
             android:layout_margin="8dp"
             android:contentDescription="Video format"
             android:src="@drawable/ic_video_format" />
 
         <ImageView
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
             android:layout_margin="8dp"
             android:contentDescription="Archive format"
             android:src="@drawable/ic_archive_format" />

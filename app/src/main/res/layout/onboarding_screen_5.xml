@@ -26,6 +26,8 @@
         android:layout_marginStart="@dimen/onboarding_content_padding"
         android:layout_marginEnd="@dimen/onboarding_content_padding"
         android:gravity="center"
+        android:fontFamily="monospace"
+        android:textStyle="bold"
         android:text="@string/onboarding_title_5"
         app:layout_constraintBottom_toTopOf="@+id/textView10"
         app:layout_constraintEnd_toEndOf="parent"
