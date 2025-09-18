@@ -29,6 +29,11 @@ public class ConvertedFileRepository {
         executorService.execute(() -> convertedFileDao.insertFile(convertedFile));
     }
 
+    // Delete a converted file by path (background thread)
+    public void deleteConvertedFileByPath(String filePath) {
+        executorService.execute(() -> convertedFileDao.deleteFileByPath(filePath));
+    }
+
     // Get LiveData for reactive updates
     public LiveData<List<ConvertedFile>> getRecentFilesLiveData() {
         return recentFilesLiveData;

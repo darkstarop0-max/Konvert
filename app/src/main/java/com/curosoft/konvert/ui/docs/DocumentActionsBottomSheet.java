@@ -139,7 +139,12 @@ public class DocumentActionsBottomSheet extends BottomSheetDialogFragment {
     }
     
     private void showRenameDialog() {
-        CustomDialogUtils.showRenameDialog(requireContext(), document.getName(), newName -> {
+        Context context = getContext();
+        if (context == null) {
+            return; // Fragment not attached, cannot proceed
+        }
+        
+        CustomDialogUtils.showRenameDialog(context, document.getName(), newName -> {
             renameDocument(newName);
         });
         dismiss();
@@ -155,18 +160,31 @@ public class DocumentActionsBottomSheet extends BottomSheetDialogFragment {
             if (listener != null) {
                 listener.onDocumentRenamed(document, newFile);
             }
-            Toast.makeText(requireContext(), "Document renamed successfully", Toast.LENGTH_SHORT).show();
+            // Use safe context check for Toast
+            Context context = getContext();
+            if (context != null) {
+                Toast.makeText(context, "Document renamed successfully", Toast.LENGTH_SHORT).show();
+            }
         } else {
-            Toast.makeText(requireContext(), "Failed to rename document", Toast.LENGTH_SHORT).show();
+            // Use safe context check for Toast
+            Context context = getContext();
+            if (context != null) {
+                Toast.makeText(context, "Failed to rename document", Toast.LENGTH_SHORT).show();
+            }
         }
     }
     
     private void shareDocument() {
+        Context context = getContext();
+        if (context == null) {
+            return; // Fragment not attached, cannot proceed
+        }
+        
         try {
             Intent shareIntent = new Intent(Intent.ACTION_SEND);
             Uri fileUri = FileProvider.getUriForFile(
-                requireContext(),
-                requireContext().getPackageName() + ".provider",
+                context,
+                context.getPackageName() + ".provider",
                 document
             );
             shareIntent.setType("*/*");
@@ -175,25 +193,35 @@ public class DocumentActionsBottomSheet extends BottomSheetDialogFragment {
             
             startActivity(Intent.createChooser(shareIntent, "Share Document"));
         } catch (Exception e) {
-            Toast.makeText(requireContext(), "Failed to share document", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Failed to share document", Toast.LENGTH_SHORT).show();
         }
         dismiss();
     }
     
     private void showDocumentDetails() {
+        Context context = getContext();
+        if (context == null) {
+            return; // Fragment not attached, cannot proceed
+        }
+        
         String details = "Name: " + document.getName() + "\n" +
                         "Size: " + formatFileSize(document.length()) + "\n" +
                         "Path: " + document.getAbsolutePath() + "\n" +
-                        "Last Modified: " + DateUtils.formatDateTime(requireContext(), 
+                        "Last Modified: " + DateUtils.formatDateTime(context, 
                             document.lastModified(), DateUtils.FORMAT_SHOW_DATE | DateUtils.FORMAT_SHOW_TIME);
         
-        CustomDialogUtils.showDetailsDialog(requireContext(), "Document Details", details);
+        CustomDialogUtils.showDetailsDialog(context, "Document Details", details);
         dismiss();
     }
     
     private void showDeleteConfirmation() {
+        Context context = getContext();
+        if (context == null) {
+            return; // Fragment not attached, cannot proceed
+        }
+        
         String message = "Are you sure you want to delete \"" + document.getName() + "\"? This action cannot be undone.";
-        CustomDialogUtils.showConfirmDialog(requireContext(), "Delete Document", message, "Delete", () -> {
+        CustomDialogUtils.showConfirmDialog(context, "Delete Document", message, "Delete", () -> {
             deleteDocument();
         });
         dismiss();
@@ -204,9 +232,17 @@ public class DocumentActionsBottomSheet extends BottomSheetDialogFragment {
             if (listener != null) {
                 listener.onDocumentDeleted(document);
             }
-            Toast.makeText(requireContext(), "Document deleted successfully", Toast.LENGTH_SHORT).show();
+            // Use safe context check for Toast
+            Context context = getContext();
+            if (context != null) {
+                Toast.makeText(context, "Document deleted successfully", Toast.LENGTH_SHORT).show();
+            }
         } else {
-            Toast.makeText(requireContext(), "Failed to delete document", Toast.LENGTH_SHORT).show();
+            // Use safe context check for Toast
+            Context context = getContext();
+            if (context != null) {
+                Toast.makeText(context, "Failed to delete document", Toast.LENGTH_SHORT).show();
+            }
         }
     }
     

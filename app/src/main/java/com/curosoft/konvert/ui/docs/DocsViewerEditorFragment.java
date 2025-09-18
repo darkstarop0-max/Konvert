@@ -13,10 +13,12 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.curosoft.konvert.R;
+import com.curosoft.konvert.ui.dashboard.DashboardViewModel;
 import com.curosoft.konvert.utils.DocumentAccessManager;
 import com.curosoft.konvert.utils.MediaStoreDocumentScanner;
 import com.google.android.material.button.MaterialButton;
@@ -43,14 +45,13 @@ public class DocsViewerEditorFragment extends Fragment implements
     private MediaStoreDocumentScanner mediaStoreScanner;
     private DocumentAccessManager accessManager;
     private CleanDocumentAdapter adapter;
+    private DashboardViewModel dashboardViewModel;
     
     // UI Components
     private RecyclerView recyclerView;
     private LinearProgressIndicator progressIndicator;
     private LinearLayout emptyStateLayout;
     private LinearLayout loadingStateLayout;
-    private MaterialButton addDocumentButton;
-    private MaterialButton chooseFolderButton;
     
     // State management
     private boolean isInitialLoad = true;
@@ -66,6 +67,9 @@ public class DocsViewerEditorFragment extends Fragment implements
         // Initialize document access manager
         accessManager = new DocumentAccessManager(this);
         accessManager.setListener(this);
+        
+        // Initialize DashboardViewModel for managing recent files
+        dashboardViewModel = new ViewModelProvider(requireActivity()).get(DashboardViewModel.class);
         
         Log.d(TAG, "DocsViewerFragment created with professional scanning");
     }
@@ -94,12 +98,6 @@ public class DocsViewerEditorFragment extends Fragment implements
         progressIndicator = view.findViewById(R.id.progressIndicator);
         emptyStateLayout = view.findViewById(R.id.emptyStateLayout);
         loadingStateLayout = view.findViewById(R.id.loadingStateLayout);
-        
-        // Look for SAF buttons in empty state (if they exist in layout)
-        if (emptyStateLayout != null) {
-            addDocumentButton = emptyStateLayout.findViewById(R.id.addDocumentButton);
-            chooseFolderButton = emptyStateLayout.findViewById(R.id.chooseFolderButton);
-        }
     }
     
     private void setupRecyclerView() {
@@ -112,19 +110,25 @@ public class DocsViewerEditorFragment extends Fragment implements
     }
     
     private void setupEmptyState() {
-        if (addDocumentButton != null) {
-            addDocumentButton.setOnClickListener(v -> {
-                Log.d(TAG, "Add document button clicked");
-                accessManager.launchDocumentPicker();
-            });
+        // Empty state setup - no buttons needed as they're now in the toolbar
+    }
+    
+    /**
+     * Public method called from MainActivity when Open Document menu item is clicked
+     */
+    public void openDocumentFromMenu() {
+        Log.d(TAG, "Open document from menu clicked");
+        if (accessManager != null) {
+            accessManager.launchDocumentPicker();
         }
-        
-        if (chooseFolderButton != null) {
-            chooseFolderButton.setOnClickListener(v -> {
-                Log.d(TAG, "Choose folder button clicked");
-                accessManager.launchFolderPicker();
-            });
-        }
+    }
+    
+    /**
+     * Public method called from MainActivity when Sort menu item is clicked
+     */
+    public void showSortDialog() {
+        // TODO: Implement sort dialog functionality
+        Log.d(TAG, "Sort dialog requested");
     }
     
     /**
@@ -324,6 +328,11 @@ public class DocsViewerEditorFragment extends Fragment implements
     
     @Override
     public void onDocumentDeleted(File document) {
+        // Remove from recent files database
+        if (dashboardViewModel != null && document != null) {
+            dashboardViewModel.deleteConvertedFile(document.getAbsolutePath());
+        }
+        
         // Refresh the list after deletion
         mediaStoreScanner.clearCache();
         startDocumentScanning();

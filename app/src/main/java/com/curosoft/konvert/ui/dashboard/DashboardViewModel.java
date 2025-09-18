@@ -12,6 +12,7 @@ import com.curosoft.konvert.data.repository.ConvertedFileRepository;
 import com.curosoft.konvert.ui.dashboard.models.RecentFile;
 import com.curosoft.konvert.utils.TimeUtils;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,10 +47,24 @@ public class DashboardViewModel extends AndroidViewModel {
         repository.insertConvertedFile(convertedFile);
     }
 
+    public void deleteConvertedFile(String filePath) {
+        repository.deleteConvertedFileByPath(filePath);
+    }
+
     private List<RecentFile> convertDatabaseFilesToRecentFiles(List<ConvertedFile> convertedFiles) {
         List<RecentFile> recentFiles = new ArrayList<>();
         
         for (ConvertedFile convertedFile : convertedFiles) {
+            // Filter out files that no longer exist on the device
+            if (convertedFile.getFilePath() != null) {
+                File file = new File(convertedFile.getFilePath());
+                if (!file.exists()) {
+                    // File no longer exists, remove it from database in background
+                    repository.deleteConvertedFileByPath(convertedFile.getFilePath());
+                    continue; // Skip this file
+                }
+            }
+            
             // Determine icon based on file type
             int iconRes = getIconForFile(convertedFile.getFileName());
             

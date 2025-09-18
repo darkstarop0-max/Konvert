@@ -3,6 +3,7 @@ package com.curosoft.konvert;
 import android.animation.AnimatorInflater;
 import android.animation.AnimatorSet;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,13 +20,15 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.curosoft.konvert.ui.docs.DocsViewerEditorFragment;
-import com.curosoft.konvert.ui.onboarding.OnboardingActivity;
 import com.curosoft.konvert.utils.PreferenceManager;
 import com.curosoft.konvert.utils.SettingsManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String PREFS_NAME = "KonvertPrefs";
+    private static final String KEY_SEEN_WELCOME = "seen_welcome";
+    
     private NavController navController;
     private BottomNavigationView bottomNavigationView;
     private CardView bottomNavigationContainer;
@@ -36,6 +39,15 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        // Check if welcome screen should be shown
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        if (!prefs.getBoolean(KEY_SEEN_WELCOME, false)) {
+            Intent intent = new Intent(this, WelcomeActivity.class);
+            startActivity(intent);
+            finish();
+            return;
+        }
         
         // Apply theme setting before setting content view
         SettingsManager settingsManager = new SettingsManager(this);
@@ -53,16 +65,6 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
         
-        // Check if onboarding is completed
-        preferenceManager = PreferenceManager.getInstance(this);
-        if (preferenceManager.isFirstTimeLaunch()) {
-            // First time launch - show onboarding
-            startActivity(new Intent(this, OnboardingActivity.class));
-            finish();
-            return;
-        }
-        
-        // User has seen onboarding, proceed normally
         setContentView(R.layout.activity_main);
         
         // Set up toolbar
@@ -80,12 +82,14 @@ public class MainActivity extends AppCompatActivity {
             bottomNavigationContainer = findViewById(R.id.bottom_navigation_container);
             
             // Define top-level destinations
-        AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-            R.id.dashboardFragment, R.id.docsViewerEditorFragment, R.id.settingsFragment)
-            .build();
-                    
-            // Connect the navController with the toolbar and BottomNavigationView
+            AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
+                    R.id.dashboardFragment, R.id.docsViewerEditorFragment, R.id.settingsFragment)
+                    .build();
+            
+            // Connect the nav controller to the toolbar
             NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
+            
+            // Connect the nav controller to the bottom navigation
             NavigationUI.setupWithNavController(bottomNavigationView, navController);
             
             // Add smooth animations to bottom navigation items
@@ -94,26 +98,22 @@ public class MainActivity extends AppCompatActivity {
             // Handle destination changes to show/hide bottom navigation and update toolbar title
             navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
                 int destinationId = destination.getId();
-                if (destinationId == R.id.onboardingFragment) {
-                    bottomNavigationContainer.setVisibility(android.view.View.GONE);
-                    toolbar.setVisibility(android.view.View.GONE);
+                // Bottom navigation and toolbar are always visible in main app
+                bottomNavigationContainer.setVisibility(android.view.View.VISIBLE);
+                toolbar.setVisibility(android.view.View.VISIBLE);
+                
+                // Set custom title styling for Documents fragment
+                if (destinationId == R.id.docsViewerEditorFragment) {
+                    toolbar.setTitle("Documents");
+                    toolbar.setTitleTextColor(getResources().getColor(R.color.text_primary, null));
+                    isDocumentsScreenActive = true;
                 } else {
-                    bottomNavigationContainer.setVisibility(android.view.View.VISIBLE);
-                    toolbar.setVisibility(android.view.View.VISIBLE);
-                    
-                    // Set custom title styling for Documents fragment
-                    if (destinationId == R.id.docsViewerEditorFragment) {
-                        toolbar.setTitle("Documents");
-                        toolbar.setTitleTextColor(getResources().getColor(R.color.text_primary, null));
-                        isDocumentsScreenActive = true;
-                    } else {
-                        toolbar.setTitle(destination.getLabel());
-                        toolbar.setTitleTextColor(getResources().getColor(R.color.clean_text_primary, null));
-                        isDocumentsScreenActive = false;
-                    }
-                    // Invalidate options menu to show/hide sort button
-                    invalidateOptionsMenu();
+                    toolbar.setTitle(destination.getLabel());
+                    toolbar.setTitleTextColor(getResources().getColor(R.color.clean_text_primary, null));
+                    isDocumentsScreenActive = false;
                 }
+                // Invalidate options menu to show/hide documents menu
+                invalidateOptionsMenu();
             });
         }
     }
@@ -126,16 +126,9 @@ public class MainActivity extends AppCompatActivity {
                 AnimatorSet scaleUp = (AnimatorSet) AnimatorInflater.loadAnimator(this, R.animator.nav_item_scale_up);
                 scaleUp.setTarget(selectedView);
                 scaleUp.start();
-                
-                // Scale back down after a short delay
-                selectedView.postDelayed(() -> {
-                    AnimatorSet scaleDown = (AnimatorSet) AnimatorInflater.loadAnimator(this, R.animator.nav_item_scale_down);
-                    scaleDown.setTarget(selectedView);
-                    scaleDown.start();
-                }, 100);
             }
             
-            // Let NavigationUI handle the actual navigation
+            // Navigate to the selected destination
             return NavigationUI.onNavDestinationSelected(item, navController);
         });
     }
@@ -156,18 +149,30 @@ public class MainActivity extends AppCompatActivity {
     
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.action_sort) {
-            // Get the current fragment and call sort method
-            NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()
-                    .findFragmentById(R.id.nav_host_fragment);
-            if (navHostFragment != null) {
-                Fragment currentFragment = navHostFragment.getChildFragmentManager().getFragments().get(0);
-                if (currentFragment instanceof DocsViewerEditorFragment) {
-                    ((DocsViewerEditorFragment) currentFragment).showSortMenu();
+        int itemId = item.getItemId();
+        
+        if (itemId == R.id.action_open_document) {
+            // Handle open document action - delegate to the fragment
+            Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
+            if (currentFragment instanceof NavHostFragment) {
+                Fragment childFragment = ((NavHostFragment) currentFragment).getChildFragmentManager().getFragments().get(0);
+                if (childFragment instanceof DocsViewerEditorFragment) {
+                    ((DocsViewerEditorFragment) childFragment).openDocumentFromMenu();
+                }
+            }
+            return true;
+        } else if (itemId == R.id.action_sort) {
+            // Handle sort action for documents screen
+            Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
+            if (currentFragment instanceof NavHostFragment) {
+                Fragment childFragment = ((NavHostFragment) currentFragment).getChildFragmentManager().getFragments().get(0);
+                if (childFragment instanceof DocsViewerEditorFragment) {
+                    ((DocsViewerEditorFragment) childFragment).showSortDialog();
                 }
             }
             return true;
         }
+        
         return super.onOptionsItemSelected(item);
     }
 }

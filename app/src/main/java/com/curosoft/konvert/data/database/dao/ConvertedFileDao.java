@@ -27,6 +27,9 @@ public interface ConvertedFileDao {
     @Query("DELETE FROM converted_files WHERE id = :id")
     void deleteFile(int id);
 
+    @Query("DELETE FROM converted_files WHERE filePath = :filePath")
+    void deleteFileByPath(String filePath);
+
     @Query("DELETE FROM converted_files")
     void deleteAllFiles();
 }

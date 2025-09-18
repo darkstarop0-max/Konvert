@@ -32,16 +32,4 @@
         android:name="com.curosoft.konvert.ui.filepicker.FilePickerFragment"
         android:label="@string/file_picker"
         tools:layout="@layout/fragment_file_picker" />
-
-    <fragment
-        android:id="@+id/onboardingFragment"
-        android:name="com.curosoft.konvert.ui.onboarding.OnboardingFragment"
-        android:label="@string/onboarding"
-        tools:layout="@layout/fragment_onboarding">
-        <action
-            android:id="@+id/action_onboardingFragment_to_dashboardFragment"
-            app:destination="@id/dashboardFragment"
-            app:popUpTo="@id/onboardingFragment"
-            app:popUpToInclusive="true" />
-    </fragment>
 </navigation>
